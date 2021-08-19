@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "sortingvis.kkucharski-com",
+    "site": "sortingvis-kkucharski-com",
     "public": "dist",
     "ignore": [
       "firebase.json",
