@@ -2,7 +2,7 @@ const HtmlWebPackPlugin = require("html-webpack-plugin");
 const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
-
+const webpack = require('webpack');
 const path = require('path');
 
 const resolvePath = pathSegments => path.resolve(__dirname, pathSegments);
@@ -65,7 +65,7 @@ module.exports = {
     optimization: optimization,
     devServer: {
         port: 3000,
-        host: "0.0.0.0",
+        host: "localhost",
         disableHostCheck: true,
         historyApiFallback: true
     },
@@ -79,6 +79,17 @@ module.exports = {
                 {from: resolvePath('fonts'), to: resolvePath('dist/fonts')},
             ],
         }),
+        new webpack.DefinePlugin({
+            'process.env': {
+                FB_API_KEY: JSON.stringify(process.env.FB_API_KEY),
+                FB_AUTH_DOMAIN: JSON.stringify(process.env.FB_AUTH_DOMAIN),
+                FB_PROJECT_ID: JSON.stringify(process.env.FB_PROJECT_ID),
+                FB_STORAGE_BUCKET: JSON.stringify(process.env.FB_STORAGE_BUCKET),
+                FB_MESSAGING_SENDER_ID: JSON.stringify(process.env.FB_MESSAGING_SENDER_ID),
+                FB_APP_ID: JSON.stringify(process.env.FB_APP_ID),
+                FB_MEASUREMENT_ID: JSON.stringify(process.env.FB_MEASUREMENT_ID),
+            },
+        })
     ],
     module: {
         rules: [
@@ -124,11 +135,5 @@ module.exports = {
                 ]
             }
         ]
-    },
-    externals: {
-        config: JSON.stringify({
-            apiUrl: 'http://0.0.0.0:8000'
-        })
-    },
-    //stats: "verbose"
+    }
 };
