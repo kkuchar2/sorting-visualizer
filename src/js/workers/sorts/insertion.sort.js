@@ -1,4 +1,4 @@
-import {CheckSortPause, mark, notifySortUpdate, sortState, unmark} from "workers/worker.utils.js";
+import { CheckSortPause, IsAborted, mark, notifySortUpdate, sortState, unmark } from "workers/worker.utils.js";
 
 export const insertionSort = async () => {
     let length = sortState.data.length;
@@ -6,7 +6,7 @@ export const insertionSort = async () => {
 
         await CheckSortPause();
 
-        if (sortState.abort) {
+        if (IsAborted()) {
             return;
         }
 

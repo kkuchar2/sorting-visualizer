@@ -7,8 +7,8 @@ import { SortPage } from "SortPage";
 
 import "styles/App.scss";
 
-firebase.initializeApp(firebaseConfig);
-firebase.analytics();
+// firebase.initializeApp(firebaseConfig);
+// firebase.analytics();
 
 function App() {
     return <div className={"app"}>

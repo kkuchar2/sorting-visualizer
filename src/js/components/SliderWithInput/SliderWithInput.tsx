@@ -1,6 +1,6 @@
 import React from "react";
 import classNames from "classnames";
-import { Slider, Text } from "kuchkr-react-component-library";
+import {Slider, Text} from "kuchkr-react-component-library";
 
 import "./SliderWithInput.scss";
 
@@ -16,7 +16,8 @@ export const SliderWithInput = (props) => {
         max,
         disabled,
         onSliderChange,
-        onInputChange
+        onInputChange,
+        theme
     } = props;
 
     return <div className={classNames("sliderWithInput", {disabled: disabled})}>
@@ -28,7 +29,7 @@ export const SliderWithInput = (props) => {
 
         <div className={"sliderAndInput"}>
             <Slider
-                theme={Slider.darkTheme}
+                theme={theme}
                 min={min}
                 max={max}
                 logarithmic={logarithmic}

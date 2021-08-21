@@ -1,7 +1,7 @@
-import {CheckSortPause, mark, notifySortUpdate, sortState, unmark} from "workers/worker.utils.js";
+import { CheckSortPause, IsAborted, mark, notifySortUpdate, sortState, unmark } from "workers/worker.utils.js";
 
 const merge = async (start, mid, end) => {
-    if (sortState.abort) {
+    if (IsAborted()) {
         return;
     }
 
@@ -52,7 +52,7 @@ const merge = async (start, mid, end) => {
 };
 
 const mergeSort = async (start, end) => {
-    if (sortState.abort) {
+    if (IsAborted()) {
         return;
     }
 

@@ -3,7 +3,6 @@
     "baseUrl": ".",
     "paths": {
       "images": ["images"],
-      "fonts": ["fonts"],
       "util/*": ["src/js/util/*"],
       "configs": ["configs"],
       "components/*": ["src/js/components/*"],

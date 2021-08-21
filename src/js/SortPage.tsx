@@ -1,105 +1,92 @@
-import {Button, Select, Text} from "kuchkr-react-component-library";
-import React, {useCallback, useEffect, useState} from 'react';
-
+import {Button, Slider, Text} from "kuchkr-react-component-library";
+import React, {useCallback, useEffect, useReducer, useState} from 'react';
 import {BarsView} from "components/BarsView/BarsView";
-import {SliderWithInput} from "components/SliderWithInput/SliderWithInput";
-import {HexColorPicker} from "react-colorful";
 
 import {registerSortWorker, sendMessage, unregisterWorker} from './workers/workers';
 import {useEffectWithNonNull} from 'util/util';
 import validator from 'validator';
 
+import {
+    buttonTheme,
+    descriptionTextTheme,
+    fieldDescriptionTextTheme,
+    sliderTheme,
+    sortButtonTheme,
+    StyledDescriptionWrapper,
+    StyledSelect,
+    StyledTitleWrapper,
+    titleTextTheme,
+    StyledTopSection,
+    StyledBottomSection
+} from "./style.js";
+
 import "styles/SortPage.scss";
 
-const buttonTheme = {
-    width: "150px",
-    height: "40px",
-    background: "#1d1d1d",
-    disabledBackground: "rgba(47,47,47,0.43)",
-    hoverBackground: "#212121",
-    textColor: "#e5e5e5",
-    disabledTextColor: "rgba(255,255,255,0.20)",
-    textColorHover: "#ffffff",
-    border: "none"
-}
-
-const selectTheme = {
-    width: "250px",
-    height: "50px",
-    border: 'none',
-    borderRadius: '5px',
-    textColor: '#959595',
-    disabledTextColor: '#616161',
-    backgroundColor: '#232323',
-    disabledBackgroundColor: 'rgba(49,49,49,0.75)',
-    hoverBackgroundColor: '#212121',
-    iconColor: "#959595",
-    disabledIconColor: "#4c4c4c",
-
-    listStyle: {
-        background: "#313131",
-
-        listItemStyle: {
-            textColor: "#868686",
-            disabledTextColor: "#525252",
-            textColorHover: "#868686",
-            background: "#363636",
-            disabledBackground: "#2b2b2b",
-            backgroundHover: "#424242",
-            paddingLeft: "15px",
-            paddingRight: "15px"
-        }
-    }
-}
+const getRandomInt = (min, max) => Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1)) + min;
 
 const sortingAlgorithms = [
-    {value: "MergeSort"},
-    {value: "BubbleSort"},
-    {value: "InsertionSort"},
-    {value: "QuickSort"}
+    {value: "MergeSort", label: "MergeSort"},
+    {value: "BubbleSort", label: "BubbleSort"},
+    {value: "InsertionSort", label: "InsertionSort"},
+    {value: "QuickSort", label: "QuickSort"}
 ];
-
 
 export const SortPage = () => {
     const minSampleCount = 10;
-    const maxSampleCount = 300;
+    const maxSampleCount = 1000;
 
     const minSlowdownFactor = 1;
     const maxSlowdownFactor = 60;
 
-    const [data, setData] = useState([]);
+    /**
+     * Control data is also SharedArrayBuffer
+     * to avoid delays in communication between worker and component
+     *
+     * controlData[0] = 0 - not paused, 1 - paused
+     * controlData[1] = 0 - not aborted, 1 - aborted
+     * controlData[2] = value - slowdown factor of notifications from worker
+     */
+    const [controlData] = useState(new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 3)));
+
+    const [main, setMain] = useState({
+        controlData: new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 3)),
+        data: new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 100)),
+        marks: new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 100)),
+        sampleCount: 100
+    });
+
     const [sorted, setSorted] = useState(false);
     const [sorting, setSorting] = useState(false);
     const [paused, setPaused] = useState(false);
     const [selectedAlgorithm, setSelectedAlgorithm] = useState(sortingAlgorithms[0]);
-    const [sampleCount, setSampleCount] = useState(100);
     const [slowdownFactor, setSlowdownFactor] = useState(minSlowdownFactor);
     const [worker, setWorker] = useState(null);
-    const [color, setColor] = useState("#555555");
+    const [color] = useState("#0085FF");
     const [dirty, setDirty] = useState(false);
-    const [marks, setMarks] = useState([]);
+
+    const [_, forceUpdate] = useReducer((x) => x + 1, 0);
 
     const messageHandlersMap = {
-        "sort": payload => {
-            setData(payload.data)
-            setMarks(payload.marks)
-        },
+        "sort": payload => forceUpdate(),
         "shuffle": payload => onShuffleDataReceived(payload),
         "sortFinished": payload => onSortFinished(payload.sorted),
     };
 
     useEffect(() => {
         const onMessageReceived = e => messageHandlersMap[e.data.type](e.data.payload);
-        setWorker(registerSortWorker(onMessageReceived));
+        setWorker(registerSortWorker(onMessageReceived, main.data, controlData));
         return () => unregisterWorker(worker);
     }, []);
 
-    useEffectWithNonNull(() => onShuffleRequest(sampleCount), [worker]);
+    useEffectWithNonNull(() => {
+        initializeData();
+        requestShuffleData();
+    }, [worker, main]);
 
     const onShuffleDataReceived = useCallback(receivedData => {
-        setData(receivedData);
         setSorted(false);
         setDirty(true);
+        forceUpdate();
     }, []);
 
     const onSortFinished = useCallback(isSorted => {
@@ -114,29 +101,48 @@ export const SortPage = () => {
             return;
         }
 
-        if (sorting) {
-            setSorting(false);
-            setPaused(!paused);
-            sendMessage(worker, "pause");
-        } else {
+        console.log(`Sorting: ${sorting} paused: ${paused} sorted: ${sorted}`);
+
+        if (sorting && !paused) {
+            setPaused(true);
+            main.controlData[0] = 1;
+        } else if (!sorting && paused) {
+            main.controlData[0] = 0;
+            setPaused(false);
+        } else if (sorting && paused && !sorted) {
+            main.controlData[0] = 0;
+            setPaused(false);
+        } else if (!sorting && !sorted) {
+            main.controlData[0] = 0;
+            main.controlData[1] = 0;
             setPaused(false);
             setSorting(true);
             sendMessage(worker, "sort", {algorithm: selectedAlgorithm.value});
         }
-    }, [worker, sorting, sorted, selectedAlgorithm]);
+    }, [worker, sorting, sorted, selectedAlgorithm, paused, slowdownFactor]);
 
-    const onStopButtonPressed = useCallback(() => sendMessage(worker, "stop"), [worker]);
-
-    const onShuffleRequest = useCallback(samples => {
-        setSorting(false);
-        sendMessage(worker, "shuffle", {sampleCount: samples, maxValue: maxSampleCount});
+    const onStopButtonPressed = useCallback(() => {
+        main.controlData[1] = 1;
     }, [worker]);
+
+    const requestShuffleData = useCallback(() => {
+        setSorting(false);
+        sendMessage(worker, "shuffle", {maxValue: maxSampleCount});
+    }, [worker]);
+
+    const initializeData = useCallback(() => {
+        sendMessage(worker, "initSharedData", {
+            buffer: main.data,
+            controlData: main.controlData,
+            marksData: main.marks
+        });
+    }, [main, worker]);
 
     const onSlowdownFactorChange = useCallback((e) => {
         const value = validator.toInt(e.target.value);
 
         if (value >= 1 && value <= 50) {
-            setSlowdownFactor(value)
+            setSlowdownFactor(value);
         }
     }, []);
 
@@ -144,132 +150,128 @@ export const SortPage = () => {
         const value = validator.toInt(str);
 
         if (value >= left && value <= right) {
-            onValidateSuccess(value)
+            onValidateSuccess(value);
         }
-    }
+    };
 
-    const onSampleCountInputChange = useCallback(e => {
-        validateRangeInt(e.target.value, 1, maxSampleCount, setSampleCount)
-    }, []);
-
-    useEffectWithNonNull(() => onShuffleRequest(sampleCount), [sampleCount, worker])
+    useEffect(() => {
+        main.controlData[2] = slowdownFactor;
+    }, [slowdownFactor]);
 
     useEffectWithNonNull(() => {
         sendMessage(worker, "setSlowdownFactor", {value: slowdownFactor});
-    }, [slowdownFactor, worker])
+    }, [slowdownFactor, worker]);
 
     const getPlayPauseIcon = useCallback(() => {
         return !sorting || paused ? 'images/play_icon.png' : 'images/pause_icon.png';
     }, [sorting, paused]);
 
-    const getStartButtonText = useCallback(() => !sorting || paused ? "Sort" : "Pause", [sorting, paused])
+    const getStartButtonText = useCallback(() => !sorting || paused ? "Sort" : "Pause", [sorting, paused]);
 
-    const onSelectedAlgorithmChange = useCallback((index, item) => setSelectedAlgorithm(item), []);
+    const onSampleCountSliderChange = useCallback(v => {
+
+        const newData = new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * v));
+
+        for (let i = 0; i < newData.length; i++) {
+            newData[i] = getRandomInt(1, maxSampleCount);
+        }
+
+        setMain({
+            controlData: main.controlData,
+            data: newData,
+            marks: new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * v)),
+            sampleCount: v
+        });
+    }, [main]);
 
     return <div className={"sortPage"}>
         <div className={"window"}>
-            <div className={"toolbar"}>
-                <Text theme={Text.darkTheme} className="sortTitle" text={"Sorting algorithms visualizer"}/>
+            <StyledTopSection>
+                <StyledTitleWrapper>
+                    <Text theme={titleTextTheme} text={"Sorting Visualiser"}/>
+                </StyledTitleWrapper>
 
-                <Text theme={Text.darkTheme} className="sortDescription"
-                      text={"Tool that displays visualisation of common sorting algorithms"}/>
+                <StyledDescriptionWrapper>
+                    <Text theme={descriptionTextTheme} text={"Realtime visualizer for common sorting algorithms"}/>
+                </StyledDescriptionWrapper>
+            </StyledTopSection>
 
-                <Text theme={Text.darkTheme} className="sortDescription"
-                      text={"Algorithms code is placed and running on worker thread, while notifying UI components in real time"}/>
-
-                <div className={"algorithmSelectSection"}>
-                    <div className={"algorithmSelectTitle"}>
-                        <Text theme={Text.darkTheme} disabled={sorting} className={"title"}
-                              text={"Sorting algorithm:"}/>
-                    </div>
-
-                    <Select
-                        theme={selectTheme}
-                        style={{marginLeft: 20}}
-                        className={"sorting-algorithm-select"}
-                        title={selectedAlgorithm.value}
+            <StyledBottomSection>
+                <div className={"toolbar"}>
+                    <StyledSelect
+                        placeholder={'Select sorting algorithm'}
                         disabled={sorting}
-                        items={sortingAlgorithms}
-                        value={selectedAlgorithm.value}
-                        itemValueProvider={v => <div>{v.value}</div>}
-                        dataItemRenderer={item => <p>{item.value}</p>}
-                        onChange={onSelectedAlgorithmChange}>
-                    </Select>
-                </div>
-
-                <SliderWithInput
-                    text={"Number of samples:"}
-                    description={"Number of samples that will be sorted and visualized"}
-                    logarithmic={true}
-                    markValues={[100, 200]}
-                    value={sampleCount}
-                    min={minSampleCount}
-                    max={maxSampleCount}
-                    disabled={sorting}
-                    onSliderChange={setSampleCount}
-                    onInputChange={onSampleCountInputChange}>
-                </SliderWithInput>
-
-                <SliderWithInput
-                    text={"Slowdown factor [ms]:"}
-                    description={"Delay of miliseconds to wait before each visual state to update (less = faster)"}
-                    logarithmic={true}
-                    markValues={[10, 20, 30, 40, 50]}
-                    value={slowdownFactor}
-                    min={minSlowdownFactor}
-                    max={maxSlowdownFactor}
-                    onSliderChange={setSlowdownFactor}
-                    onInputChange={onSlowdownFactorChange}>
-                </SliderWithInput>
-
-                <Text theme={Text.darkTheme} className={"title"} text={"Bars color:"}/>
-
-                <HexColorPicker color={color} onChange={setColor}/>
-
-                <div className={"buttonsSection"}>
-                    <Button
-                        theme={buttonTheme}
-                        className={"chartButton"}
-                        text={"Shuffle"}
-                        onClick={() => onShuffleRequest(sampleCount)}
-                        disabled={sorting}>
-                        <img src={'/images/shuffle_icon.png'} width={12} height={12} alt={""}/>
-                    </Button>
+                        options={sortingAlgorithms}
+                        value={selectedAlgorithm}
+                        onChange={setSelectedAlgorithm}>
+                    </StyledSelect>
 
                     <Button
-                        theme={buttonTheme}
-                        style={{marginLeft: 10}}
-                        className={"chartButton playButton"}
+                        theme={sortButtonTheme}
                         onClick={onStartPauseButtonPressed}
                         text={getStartButtonText()}
                         disabled={sorted}>
                         <img src={getPlayPauseIcon()} width={12} height={12} alt={""}/>
                     </Button>
 
-                    <Button
-                        theme={buttonTheme}
-                        style={{marginLeft: 10}}
-                        className={"chartButton stopButton"}
-                        onClick={onStopButtonPressed}
-                        text={"Stop"}
-                        disabled={!sorting || paused}>
-                        <img src={'/images/stop_icon.png'} width={12} height={12} alt={""}/>
-                    </Button>
+                    <Text theme={fieldDescriptionTextTheme} text={"Number of samples:"}/>
+
+                    <Slider
+                        text={"Sample count:"}
+                        logarithmic={true}
+                        markValues={[250, 500, 750]}
+                        value={main.sampleCount}
+                        min={minSampleCount}
+                        theme={sliderTheme}
+                        max={maxSampleCount}
+                        disabled={sorting}
+                        onChange={onSampleCountSliderChange}>
+                    </Slider>
+
+                    <Text theme={fieldDescriptionTextTheme} text={"Slowdown factor [ms]:"}/>
+
+                    <Slider
+                        text={"Slowdown factor [ms]:"}
+                        logarithmic={true}
+                        markValues={[10, 20, 30, 40, 50]}
+                        value={slowdownFactor}
+                        min={minSlowdownFactor}
+                        theme={sliderTheme}
+                        max={maxSlowdownFactor}
+                        onChange={setSlowdownFactor}>
+                    </Slider>
+
+                    <div className={"buttonsSection"}>
+                        <Button
+                            theme={buttonTheme}
+                            text={"Shuffle"}
+                            onClick={requestShuffleData}
+                            disabled={sorting}>
+                            <img src={'/images/shuffle_icon.png'} width={12} height={12} alt={""}/>
+                        </Button>
+
+                        <Button
+                            theme={buttonTheme}
+                            style={{marginLeft: 10}}
+                            onClick={onStopButtonPressed}
+                            text={"Stop"}
+                            disabled={!sorting || paused}>
+                            <img src={'/images/stop_icon.png'} width={12} height={12} alt={""}/>
+                        </Button>
+                    </div>
                 </div>
-            </div>
 
-
-            <div className={"chart"}>
-                <BarsView
-                    samples={sampleCount}
-                    maxValue={maxSampleCount}
-                    data={data}
-                    color={color}
-                    marks={marks}
-                    algorithm={selectedAlgorithm}
-                    dirty={dirty}/>
-            </div>
-
+                <div className={"chart"}>
+                    <BarsView
+                        samples={main.sampleCount}
+                        maxValue={maxSampleCount}
+                        data={Array.from(main.data)}
+                        color={color}
+                        marks={main.marks}
+                        algorithm={selectedAlgorithm}
+                        dirty={dirty}/>
+                </div>
+            </StyledBottomSection>
         </div>
     </div>;
-}
+};

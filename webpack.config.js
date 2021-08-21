@@ -53,7 +53,6 @@ module.exports = {
         modules: ['node_modules', resolvePath('src/js')],
         alias: {
             images: resolvePath('images/'),
-            fonts: resolvePath('fonts/'),
             configs: resolvePath('configs/'),
             components: resolvePath('src/js/components/'),
             util: resolvePath('src/js/util/'),
@@ -67,7 +66,11 @@ module.exports = {
         port: 3000,
         host: "localhost",
         disableHostCheck: true,
-        historyApiFallback: true
+        historyApiFallback: true,
+        headers: {
+            "Cross-Origin-Opener-Policy": "same-origin",
+            "Cross-Origin-Embedder-Policy": "require-corp",
+        }
     },
     plugins: [
         new HtmlWebPackPlugin({template: resolvePath("src/index.html")}),
@@ -76,7 +79,6 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 {from: resolvePath('images'), to: resolvePath('dist/images')},
-                {from: resolvePath('fonts'), to: resolvePath('dist/fonts')},
             ],
         }),
         new webpack.DefinePlugin({

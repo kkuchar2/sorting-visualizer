@@ -1,4 +1,4 @@
-import {CheckSortPause, mark, notifySortUpdate, sortState} from "workers/worker.utils.js";
+import { CheckSortPause, IsAborted, mark, notifySortUpdate, sortState } from "workers/worker.utils.js";
 
 const partition = (left, right) => {
     const pivot = sortState.data[Math.floor((right + left) / 2)];
@@ -33,7 +33,7 @@ const swap = (leftIndex, rightIndex) => {
 const quickSortImpl = async (left, right) => {
     await CheckSortPause();
 
-    if (sortState.abort) {
+    if (IsAborted()) {
         return;
     }
 

@@ -3,28 +3,25 @@ import React, {useCallback, useEffect, useRef, useState} from "react";
 import {getParentHeight, getParentWidth, useEffectOnTrue, useEffectWithNonNull} from 'util/util';
 
 import {
+    calculateBarsSizes,
     colorOfHash,
     createBars,
     createOrthoCamera,
     createRenderer,
     createScene,
+    dummyObj,
     enableTransparency,
     removeChildrenFromScene,
-    calculateBarsSizes,
     updateInstancedBar,
-    updateInstancedMeshColor,
-    dummyObj
+    updateInstancedMeshColor
 } from "util/GLUtil";
-
 
 import {StyledBarsView} from "./style";
 
-import "components/BarsView/BarsView.scss";
-
-const barMarkColors = ["#ff0033", "#b3ff00", "#00a002", "#ff6600"]
+const barMarkColors = ["#0085FF", "#b3ff00", "#ff2000", "#ff6600"];
 
 export const BarsView = (props) => {
-    const { samples, maxValue, data, color, marks, algorithm, dirty } = props;
+    const {samples, maxValue, data, color, marks, algorithm, dirty} = props;
 
     const mount = useRef(null);
 
@@ -66,13 +63,13 @@ export const BarsView = (props) => {
         };
     }, [initialized]);
 
-    useEffectWithNonNull(() => updateBarsColor(), [data, color, scene])
+    useEffectWithNonNull(() => updateBarsColor(), [data, color, scene]);
 
     const updateBarsColor = useCallback(() => {
         if (scene.children.length > 0) {
             updateInstancedMeshColor(scene.children[0], data.length, color);
         }
-    }, [scene, data, color])
+    }, [scene, data, color]);
 
     useEffectOnTrue(initialized, () => {
 
@@ -94,32 +91,24 @@ export const BarsView = (props) => {
             const {barWidth, spacing, offsetX} = calculateBarsSizes(width, data.length);
 
             for (let x = 0; x < samples; x++) {
-
                 updateInstancedBar(x, mesh, data[x], maxValue, height, barWidth, spacing, offsetX, color);
-
-                for (const mark of marks) {
-                    if (mark.idx === x) {
-                        mesh.setColorAt(x, colorOfHash(barMarkColors[mark.color]));
-                        break;
-                    }
-                }
-
+                mesh.setColorAt(x, colorOfHash(barMarkColors[marks[x]]));
                 mesh.setMatrixAt(x, dummyObj.matrix);
             }
 
             mesh.instanceMatrix.needsUpdate = true;
             mesh.instanceColor.needsUpdate = true;
-        }
+        };
 
         const createOrUpdateBars = () => {
+
             if (data.length === 0) {
                 return;
             }
 
             if (dirty) {
                 createBars(scene, width, height, data, maxValue, color);
-            }
-            else {
+            } else {
                 updateBars();
             }
         };
@@ -130,5 +119,5 @@ export const BarsView = (props) => {
         renderer.render(scene, camera);
     }, [algorithm, dirty, data, width, height, color, marks]);
 
-    return <StyledBarsView ref={mount} />;
-}
+    return <StyledBarsView ref={mount}/>;
+};
