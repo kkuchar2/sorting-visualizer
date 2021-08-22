@@ -1,5 +1,6 @@
 import Select from "react-select";
 import styled from "styled-components";
+import {motion} from "framer-motion";
 
 export const titleTextTheme = {
     textColor: "#337dff",
@@ -58,14 +59,32 @@ export const sliderTheme = {
     }
 };
 
-export const buttonTheme = {
+export const stopButtonTheme = {
     width: "50%",
-    height: "40px",
+    height: "50px",
     background: "#0085FF",
     disabledBackground: "#c4dbff",
     hoverBackground: "#336bce",
     borderRadius: "10px",
     border: "none",
+
+    text: {
+        textColor: "#ffffff",
+        disabledTextColor: "rgba(255,255,255,1)",
+        textAlign: 'center',
+        fontSize: '1.2em'
+    }
+};
+
+export const shuffleButtonTheme = {
+    width: "200px",
+    height: "50px",
+    background: "#0085FF",
+    disabledBackground: "#c4dbff",
+    hoverBackground: "#336bce",
+    borderRadius: "10px",
+    border: "none",
+
     text: {
         textColor: "#ffffff",
         disabledTextColor: "rgba(255,255,255,1)",
@@ -75,14 +94,14 @@ export const buttonTheme = {
 };
 
 export const sortButtonTheme = {
-    width: "100%",
+    width: "50%",
     height: "50px",
     background: "#0085FF",
     disabledBackground: "#c4dbff",
     hoverBackground: "#336bce",
     borderRadius: "10px",
     border: "none",
-    margin: "20px 0px 0px 0px",
+    margin: "0px 0px 0px 10px",
 
     text: {
         textColor: "#ffffff",
@@ -97,55 +116,60 @@ export const StyledSelect = styled(Select)`
 `;
 
 export const StyledTopSection = styled.div`
-  padding: 20px;
+  padding: 20px 20px 0;
+  height: 180px;
 `;
 
-export const StyledBottomSection = styled.div`
+export const StyledStopStartButtons = styled.div`
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin-top: 20px;
+`;
+
+export const StyledToolbarSection = styled(motion.div)`
+  border-bottom-left-radius: 10px;
+  border-top-left-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 400px;
+  min-width: 300px;
+  max-width: 400px;
+  padding: 0 20px;
+
+  @media (max-width: 1200px) {
+    flex: 1 0;
+    padding: 10px;
+    width: 100%;
+    max-width: 100%;
+    box-shadow: none;
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+  }
+
+  .algorithmSelectSection {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    color: white;
+  }
+`;
+
+export const StyledMainSection = styled.div`
   display: flex;
   flex-direction: row;
   box-sizing: border-box;
   flex: 1 0;
-
+  min-width: 200px;
+  background: white;
+  
   @media (max-width: 1200px) {
-    padding: 0;
     flex-direction: column-reverse;
     width: 100%;
-    height: 100%;
     box-shadow: none;
     border-bottom-right-radius: 0;
     border-top-right-radius: 0;
-  }
-  
-  .toolbar {
-    border-bottom-left-radius: 10px;
-    border-top-left-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-    width: 400px;
-    min-width: 300px;
-    max-width: 400px;
-    padding: 20px;
-
-    @media (max-width: 1200px) {
-      padding: 10px;
-      width: 100%;
-      max-width: 100%;
-    }
-    
-    @media (max-width: 1200px) {
-      width: 100%;
-      box-shadow: none;
-      border-bottom-left-radius: 0;
-      border-top-left-radius: 0;
-    }
-
-    .algorithmSelectSection {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      color: white;
-    }
   }
 
   .buttonsSection {
@@ -155,30 +179,65 @@ export const StyledBottomSection = styled.div`
     flex: 1 0 auto;
 
     @media (max-width: 1200px) {
-        margin-top: 30px;
+      margin-top: 30px;
     }
   }
 
   .chart {
-    height: 100%;
     min-height: 50px;
     flex: 1 0;
-    min-width: 300px;
-    padding: 20px;
-    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-width: 10px;
+    
     border-bottom-right-radius: 10px;
     border-top-right-radius: 10px;
-
-    @media (max-width: 1200px) {
-      padding: 0;
-    }
   }
 `;
 
-export const StyledDescriptionWrapper = styled.div`
+export const StyledOverChartSection = styled(motion.div)`
+  min-width: 50px;
+  display: flex;
+  height: 100px;
+  align-items: center;
+  justify-content: center;
+  
+  @media (max-width: 1200px) {
+    display: none;
+  }
+`;
+
+export const StyledChartSection = styled(motion.div)`
+  flex: 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-width: 10px;
+`;
+
+export const StyledDescriptionWrapper = styled(motion.div)`
   max-width: 300px;
 `;
 
-export const StyledTitleWrapper = styled.div`
+export const StyledTitleWrapper = styled(motion.div)`
   max-width: 300px;
 `;
+
+export const animatedWindowProps = {
+    initial: { opacity: 0, y: -50},
+    animate: { opacity: 1, y: 0},
+    transition: {type: "spring", stiffness: 1060, damping: 30, delay: 0.3}
+};
+
+export const animatedWindowProps2 = {
+    initial: {opacity: 0, y: -50},
+    animate: {opacity: 1, y: 0},
+    transition: {type: "spring", stiffness: 560, damping: 30, delay: 0.2}
+};
+
+export const animatedWindowProps3 = {
+    initial: {opacity: 0, y: -50},
+    animate: {opacity: 1, y: 0},
+    transition: {type: "spring", stiffness: 560, damping: 30, delay: 0.1}
+};
