@@ -218,7 +218,7 @@ export const SortPage = () => {
             disabled={sorting}>
             <img src={'/images/shuffle_icon.png'} width={12} height={12} alt={""}/>
         </Button>;
-    }, [matches]);
+    }, [matches, sorting, requestShuffleData]);
 
     return <div className={"sortPage"}>
         <div className={"window"}>
