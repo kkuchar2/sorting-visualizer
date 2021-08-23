@@ -1,5 +1,5 @@
 import {Button, Slider, Text} from "kuchkr-react-component-library";
-import React, {useCallback, useEffect, useReducer, useState} from 'react';
+import React, {useCallback, useEffect, useReducer, useRef, useState} from 'react';
 import {BarsView} from "components/BarsView/BarsView";
 
 import {registerSortWorker, sendMessage, unregisterWorker} from './workers/workers';
@@ -7,23 +7,26 @@ import {useEffectWithNonNull} from 'util/util';
 import validator from 'validator';
 
 import {
+    animatedWindowProps2,
+    animatedWindowProps3,
     descriptionTextTheme,
     fieldDescriptionTextTheme,
     shuffleButtonTheme,
     sliderTheme,
     sortButtonTheme,
     stopButtonTheme,
-    StyledMainSection,
+    StyledChart,
     StyledDescriptionWrapper,
+    StyledSortVisualiserWindow,
     StyledOverChartSection,
     StyledSelect,
     StyledStopStartButtons,
     StyledTitleWrapper,
+    StyledToolbar,
     titleTextTheme,
-    StyledChartSection, animatedWindowProps, animatedWindowProps2, StyledToolbarSection, animatedWindowProps3
+    StyledSortPage
 } from "./style.js";
 
-import "styles/SortPage.scss";
 import {useMediaQuery} from "@material-ui/core";
 
 const getRandomInt = (min, max) => Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1)) + min;
@@ -37,14 +40,12 @@ const sortingAlgorithms = [
 
 export const SortPage = () => {
 
-    const matches = useMediaQuery('(min-width:1200px)');
-
-    console.log(matches)
+    const matches = useMediaQuery('(min-width:1024px)');
 
     const minSampleCount = 10;
     const maxSampleCount = 1000;
 
-    const minSlowdownFactor = 1;
+    const minSlowdownFactor = 0;
     const maxSlowdownFactor = 60;
 
     /**
@@ -75,6 +76,8 @@ export const SortPage = () => {
 
     const [_, forceUpdate] = useReducer((x) => x + 1, 0);
 
+    const windowRef = useRef(null);
+
     const messageHandlersMap = {
         "sort": payload => forceUpdate(),
         "shuffle": payload => onShuffleDataReceived(payload),
@@ -84,6 +87,7 @@ export const SortPage = () => {
     useEffect(() => {
         const onMessageReceived = e => messageHandlersMap[e.data.type](e.data.payload);
         setWorker(registerSortWorker(onMessageReceived, main.data, controlData));
+        windowRef.current.scrollTop = -windowRef.current.scrollHeight;
         return () => unregisterWorker(worker);
     }, []);
 
@@ -109,8 +113,6 @@ export const SortPage = () => {
         if (sorted) {
             return;
         }
-
-        console.log(`Sorting: ${sorting} paused: ${paused} sorted: ${sorted}`);
 
         if (sorting && !paused) {
             setPaused(true);
@@ -193,120 +195,93 @@ export const SortPage = () => {
         });
     }, [main]);
 
-    const renderDesktopShuffleButton = useCallback(() => {
-        if (!matches) {
-            return;
-        }
-        return <Button
-            theme={shuffleButtonTheme}
-            text={"Shuffle"}
-            onClick={requestShuffleData}
-            disabled={sorting}>
-            <img src={'/images/shuffle_icon.png'} width={12} height={12} alt={""}/>
-        </Button>;
-    }, [matches]);
+    return <StyledSortPage>
+        <StyledSortVisualiserWindow ref={windowRef}>
+            <StyledToolbar {...animatedWindowProps3}>
 
-    const renderMobileShuffleButton = useCallback(() => {
-        if (matches) {
-            return;
-        }
-        return <Button
-            style={{marginLeft: 10}}
-            theme={shuffleButtonTheme}
-            text={"Shuffle"}
-            onClick={requestShuffleData}
-            disabled={sorting}>
-            <img src={'/images/shuffle_icon.png'} width={12} height={12} alt={""}/>
-        </Button>;
-    }, [matches, sorting, requestShuffleData]);
+                <StyledTitleWrapper {...animatedWindowProps2}>
+                    <Text theme={titleTextTheme} text={"Sorting Visualiser"}/>
+                </StyledTitleWrapper>
 
-    return <div className={"sortPage"}>
-        <div className={"window"}>
-            <StyledMainSection>
-                <StyledToolbarSection {...animatedWindowProps3}>
+                <StyledDescriptionWrapper {...animatedWindowProps2}>
+                    <Text theme={descriptionTextTheme} text={"Realtime visualizer for common sorting algorithms"}/>
+                </StyledDescriptionWrapper>
 
-                    <StyledTitleWrapper {...animatedWindowProps2}>
-                        <Text theme={titleTextTheme} text={"Sorting Visualiser"}/>
-                    </StyledTitleWrapper>
+                <StyledSelect
+                    menuPortalTarget={document.body}
+                    placeholder={'Select sorting algorithm'}
+                    disabled={sorting}
+                    isSearchable={false}
+                    options={sortingAlgorithms}
+                    value={selectedAlgorithm}
+                    onChange={setSelectedAlgorithm}>
+                </StyledSelect>
 
-                    <StyledDescriptionWrapper {...animatedWindowProps2}>
-                        <Text theme={descriptionTextTheme} text={"Realtime visualizer for common sorting algorithms"}/>
-                    </StyledDescriptionWrapper>
+                <StyledStopStartButtons>
+                    <Button
+                        theme={stopButtonTheme}
+                        onClick={onStopButtonPressed}
+                        text={"Stop"}
+                        disabled={!sorting || paused}>
+                        <img src={'/images/stop_icon.png'} width={12} height={12} alt={""}/>
+                    </Button>
 
-                    <StyledSelect
-                        menuPortalTarget={document.body}
-                        placeholder={'Select sorting algorithm'}
-                        disabled={sorting}
-                        options={sortingAlgorithms}
-                        value={selectedAlgorithm}
-                        onChange={setSelectedAlgorithm}>
-                    </StyledSelect>
+                    <Button
+                        theme={sortButtonTheme}
+                        onClick={onStartPauseButtonPressed}
+                        text={getStartButtonText()}
+                        disabled={sorted}>
+                        <img src={getPlayPauseIcon()} width={12} height={12} alt={""}/>
+                    </Button>
 
-                    <StyledStopStartButtons>
-                        <Button
-                            theme={stopButtonTheme}
-                            onClick={onStopButtonPressed}
-                            text={"Stop"}
-                            disabled={!sorting || paused}>
-                            <img src={'/images/stop_icon.png'} width={12} height={12} alt={""}/>
-                        </Button>
+                    <Button
+                        style={{marginLeft: 10}}
+                        theme={shuffleButtonTheme}
+                        text={"Shuffle"}
+                        onClick={requestShuffleData}
+                        disabled={sorting}>
+                        <img src={'/images/shuffle_icon.png'} width={12} height={12} alt={""}/>
+                    </Button>
+                </StyledStopStartButtons>
 
-                        <Button
-                            theme={sortButtonTheme}
-                            onClick={onStartPauseButtonPressed}
-                            text={getStartButtonText()}
-                            disabled={sorted}>
-                            <img src={getPlayPauseIcon()} width={12} height={12} alt={""}/>
-                        </Button>
+                <Text theme={fieldDescriptionTextTheme} text={"Number of samples:"}/>
 
-                        {renderMobileShuffleButton()}
-                    </StyledStopStartButtons>
+                <Slider
+                    text={"Sample count:"}
+                    logarithmic={true}
+                    markValues={[250, 500, 750]}
+                    value={main.sampleCount}
+                    min={minSampleCount}
+                    theme={sliderTheme}
+                    max={maxSampleCount}
+                    disabled={sorting}
+                    onChange={onSampleCountSliderChange}>
+                </Slider>
 
-                    <Text theme={fieldDescriptionTextTheme} text={"Number of samples:"}/>
+                <Text theme={fieldDescriptionTextTheme} text={"Slowdown factor [ms]:"}/>
 
-                    <Slider
-                        text={"Sample count:"}
-                        logarithmic={true}
-                        markValues={[250, 500, 750]}
-                        value={main.sampleCount}
-                        min={minSampleCount}
-                        theme={sliderTheme}
-                        max={maxSampleCount}
-                        disabled={sorting}
-                        onChange={onSampleCountSliderChange}>
-                    </Slider>
+                <Slider
+                    text={"Slowdown factor [ms]:"}
+                    logarithmic={true}
+                    markValues={[10, 20, 30, 40, 50]}
+                    value={slowdownFactor}
+                    min={minSlowdownFactor}
+                    theme={sliderTheme}
+                    max={maxSlowdownFactor}
+                    onChange={setSlowdownFactor}>
+                </Slider>
+            </StyledToolbar>
 
-                    <Text theme={fieldDescriptionTextTheme} text={"Slowdown factor [ms]:"}/>
-
-                    <Slider
-                        text={"Slowdown factor [ms]:"}
-                        logarithmic={true}
-                        markValues={[10, 20, 30, 40, 50]}
-                        value={slowdownFactor}
-                        min={minSlowdownFactor}
-                        theme={sliderTheme}
-                        max={maxSlowdownFactor}
-                        onChange={setSlowdownFactor}>
-                    </Slider>
-                </StyledToolbarSection>
-
-                <div className={"chart"}>
-                    <StyledOverChartSection {...animatedWindowProps3}>
-                        {renderDesktopShuffleButton()}
-                    </StyledOverChartSection>
-
-                    <StyledChartSection {...animatedWindowProps}>
-                        <BarsView
-                            samples={main.sampleCount}
-                            maxValue={maxSampleCount}
-                            data={Array.from(main.data)}
-                            color={color}
-                            marks={main.marks}
-                            algorithm={selectedAlgorithm}
-                            dirty={dirty}/>
-                    </StyledChartSection>
-                </div>
-            </StyledMainSection>
-        </div>
-    </div>;
+            <StyledChart>
+                <BarsView
+                    samples={main.sampleCount}
+                    maxValue={maxSampleCount}
+                    data={Array.from(main.data)}
+                    color={color}
+                    marks={main.marks}
+                    algorithm={selectedAlgorithm}
+                    dirty={dirty}/>
+            </StyledChart>
+        </StyledSortVisualiserWindow>
+    </StyledSortPage>;
 };

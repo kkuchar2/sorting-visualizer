@@ -127,27 +127,56 @@ export const StyledStopStartButtons = styled.div`
   margin-top: 20px;
 `;
 
-export const StyledToolbarSection = styled(motion.div)`
+export const StyledSortPage = styled.div`
+  width: 100%;
+  height: 100%;
+  min-width: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+`;
+
+export const StyledSortVisualiserWindow = styled.div`
+  padding: 20px;
+  box-shadow: 0 0 150px 36px rgba(0, 117, 255, 0.26);
+  display: flex;
+  flex-direction: row;
+  width: 50%;
+  min-width: 900px;
+  height: 700px;
+  border-radius: 10px;
+  background: white;
+  overflow: auto;
+  
+  @media (max-width: 1024px) {
+    flex-direction: column-reverse;
+    width: 100%;
+    border-radius: 0;
+    height: 100%;
+    max-height: 100%;
+    min-width: 100%;
+    padding: 0;
+  }
+`;
+
+export const StyledToolbar = styled(motion.div)`
   border-bottom-left-radius: 10px;
   border-top-left-radius: 10px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   width: 400px;
-  min-width: 300px;
+  min-width: 400px;
   max-width: 400px;
   padding: 0 20px;
-
-  @media (max-width: 1200px) {
-    flex: 1 0;
-    padding: 10px;
+  
+  @media (max-width: 1024px) {
+    min-width: 100%;
     width: 100%;
-    max-width: 100%;
-    box-shadow: none;
-    border-bottom-left-radius: 0;
-    border-top-left-radius: 0;
+    padding: 30px;
   }
-
+  
   .algorithmSelectSection {
     display: flex;
     align-items: center;
@@ -156,43 +185,20 @@ export const StyledToolbarSection = styled(motion.div)`
   }
 `;
 
-export const StyledMainSection = styled.div`
-  display: flex;
-  flex-direction: row;
-  box-sizing: border-box;
+export const StyledChart = styled(motion.div)`
   flex: 1 0;
-  min-width: 200px;
-  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-width: 500px;
+  min-height: 300px;
   
-  @media (max-width: 1200px) {
-    flex-direction: column-reverse;
-    width: 100%;
-    box-shadow: none;
-    border-bottom-right-radius: 0;
-    border-top-right-radius: 0;
+  @media (max-width: 1024px) {
+    min-width: 300px;
   }
-
-  .buttonsSection {
-    box-sizing: border-box;
-    display: flex;
-    align-items: flex-end;
-    flex: 1 0 auto;
-
-    @media (max-width: 1200px) {
-      margin-top: 30px;
-    }
-  }
-
-  .chart {
-    min-height: 50px;
-    flex: 1 0;
-    display: flex;
-    flex-direction: column;
-    min-width: 10px;
-    
-    border-bottom-right-radius: 10px;
-    border-top-right-radius: 10px;
-  }
+  // prevents from growing with inner canvas:
+  overflow:hidden; 
 `;
 
 export const StyledOverChartSection = styled(motion.div)`
@@ -201,19 +207,6 @@ export const StyledOverChartSection = styled(motion.div)`
   height: 100px;
   align-items: center;
   justify-content: center;
-  
-  @media (max-width: 1200px) {
-    display: none;
-  }
-`;
-
-export const StyledChartSection = styled(motion.div)`
-  flex: 1 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  min-width: 10px;
 `;
 
 export const StyledDescriptionWrapper = styled(motion.div)`

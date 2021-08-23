@@ -34,8 +34,6 @@ export const notify = (type, payload, skipMessagesByTime = false, slowDownFactor
 
     SLOWDOWN_FACTOR_MS = slowDownFactorUsed ? sortState.controlData[2] : 1;
 
-    console.log(sortState.controlData)
-
     while (new Date().getTime() - currentTime < SLOWDOWN_FACTOR_MS) {}
 };
 
