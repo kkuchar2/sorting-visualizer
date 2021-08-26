@@ -247,7 +247,7 @@ export const SortPage = () => {
                 <Text theme={fieldDescriptionTextTheme} text={`Samples: ${main.sampleCount}`}/>
 
                 <Slider
-                    style={{marginLeft: 20}}
+                    style={{marginBottom: 40}}
                     text={"Sample count:"}
                     logarithmic={true}
                     markValues={[250, 500, 750]}
@@ -263,7 +263,6 @@ export const SortPage = () => {
                 <Text theme={fieldDescriptionTextTheme} text={`Slowdown ${slowdownFactor} [ms]:`}/>
 
                 <Slider
-                    style={{marginLeft: 20}}
                     text={"Slowdown factor [ms]:"}
                     logarithmic={true}
                     markValues={[10, 20, 30, 40, 50]}

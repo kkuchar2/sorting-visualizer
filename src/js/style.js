@@ -23,7 +23,7 @@ export const fieldDescriptionTextTheme = {
 };
 
 export const sliderTheme = {
-    width: "80%",
+    width: "100%",
     height: 40,
     trackHeight: 2,
     railHeight: 2,
@@ -49,8 +49,10 @@ export const sliderTheme = {
     markSize: 8,
     markActiveSize: 8,
     modernMarkLabelFontSize: "1em",
-    modernMarkLabelLeftMargin: -30,
-    modernMarkLabelRightMargin: -50,
+    modernMinMarkLabelTopMargin: 45,
+    modernMinMarkLabelRightMargin: 0,
+    modernMaxMarkLabelRightMargin: 0,
+    modernMaxMarkLabelTopMargin: 45,
     markMargin: {
         marginTop: -3,
         marginRight: 0,
