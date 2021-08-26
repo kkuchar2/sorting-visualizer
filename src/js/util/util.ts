@@ -1,6 +1,6 @@
-import React, {lazy, useCallback, useEffect} from "react";
+import {lazy, useEffect} from "react";
 
-import packageJson from "../../../package.json";
+import packageJson from '../../../package.json';
 
 export const getBuildDate = () => packageJson.buildDate;
 
@@ -35,9 +35,6 @@ export const useEffectWithNonNull = (func, deps) =>
         func();
     }, deps);
 
-// Hook for unmount
-export const useEffectWithUnmount = func => useEffect(() => func, []);
-
 // Trigger hook on deps change only if boolVar is true
 export const useEffectOnTrue = (boolVar, func, deps) =>
     useEffect(() => {
@@ -45,46 +42,6 @@ export const useEffectOnTrue = (boolVar, func, deps) =>
             func();
         }
     }, deps);
-
-// Trigger hook on deps change only if boolVar is true and deps not null
-export const filteredBoolUseEffect = (boolVar, func, deps) =>
-    useEffect(() => {
-        for (let i = 0; i < deps.length; i++) {
-            let dep = deps[i];
-            if (dep === null || dep === undefined) {
-                return;
-            }
-        }
-
-        if (boolVar === false) {
-            func();
-        }
-    }, deps);
-
-export const notifyError = msg => {
-    return toast.error(msg, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-    });
-};
-
-export const callbackOf = (dispatch, func) => useCallback(() => func(dispatch), [dispatch]);
-
-export const withCondition = (variable, func) => {
-    if (variable) {
-        return func();
-    }
-};
-
-export const onFieldChange = (consumer, event) => {
-    consumer(event.target.value);
-    event.preventDefault();
-};
 
 export const withStatus = (status, statusName, func) => {
     if (status === statusName) {
@@ -97,36 +54,21 @@ export const withNotStatus = (status, statusName, func) => {
         return func();
     }
 };
-
-export const linearSliderPosition = (position, min, max) => {
-    const minPosition = 0;
-    const maxPosition = 100;
-    return (position / (maxPosition - minPosition)) * (max - min);
-};
-
-export const linearSliderValue = (value, min, max) => {
-    const minPosition = 0;
-    const maxPosition = 100;
-    return (value / (max - min)) * (maxPosition - minPosition);
-};
-
-export const logarithmicSliderPosition = (value, min, max) => {
-    const minPosition = 0;
-    const maxPosition = 100;
-    const minValue = Math.log(min);
-    const maxValue = Math.log(max);
-    const scale = (maxValue - minValue) / (maxPosition - minPosition);
-    const result = (Math.log(value) - minValue) / scale + minPosition;
-    // console.log("Calculating from value: " + value + " result position: " + result)
-    return result;
-};
-
 export const logarithmicSliderValue = (position, min, max) => {
     const minPosition = 0;
     const maxPosition = 100;
     const minValue = Math.log(min);
     const maxValue = Math.log(max);
     const scale = (maxValue - minValue) / (maxPosition - minPosition);
-    const result = Math.exp(minValue + scale * (position - minPosition));
-    return result;
+    return Math.exp(minValue + scale * (position - minPosition));
+};
+
+export const getRandomUInt8 = (min, max) => {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+export const createSharedArrayBuffer = (count) => {
+    return new Uint8Array(new SharedArrayBuffer(Uint8Array.BYTES_PER_ELEMENT * count));
 };

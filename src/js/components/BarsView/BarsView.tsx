@@ -107,7 +107,7 @@ export const BarsView = (props) => {
             }
 
             if (dirty) {
-                createBars(scene, width, height, data, maxValue, color);
+                createBars(scene, width, height, data, maxValue, samples, color);
             } else {
                 updateBars();
             }

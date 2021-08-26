@@ -1,3 +1,4 @@
+import { getRandomUInt8 } from "../util/util.ts";
 import { bubbleSort, insertionSort, mergeSortRecursive, quickSort } from "workers/sorts";
 
 let SLOWDOWN_FACTOR_MS = 1;
@@ -81,7 +82,7 @@ export const initSharedData = async (buffer, controlBuffer, marksBuffer) => {
 
 export const shuffle = async (maxValue) => {
     for (let i = 0; i < sortState.data.length; i++) {
-        sortState.data[i] = getRandomInt(1, maxValue);
+        sortState.data[i] = getRandomUInt8(1, maxValue);
     }
 };
 
@@ -96,8 +97,6 @@ export const CheckSortPause = async (delay = 0) => {
 };
 
 export const IsAborted = () => sortState.controlData[1] === 1;
-
-export const getRandomInt = (min, max) => Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1)) + min;
 
 export class resetState {
 }

@@ -1,10 +1,10 @@
-import {Button, Slider, Text} from "kuchkr-react-component-library";
 import React, {useCallback, useEffect, useReducer, useRef, useState} from 'react';
+import {Button, Slider, Text} from "kuchkr-react-component-library";
+
 import {BarsView} from "components/BarsView/BarsView";
+import {createSharedArrayBuffer, getRandomUInt8, useEffectWithNonNull} from 'util/util';
 
 import {registerSortWorker, sendMessage, unregisterWorker} from './workers/workers';
-import {useEffectWithNonNull} from 'util/util';
-import validator from 'validator';
 
 import {
     animatedWindowProps2,
@@ -26,10 +26,6 @@ import {
     StyledSortPage
 } from "./style.js";
 
-import {useMediaQuery} from "@material-ui/core";
-
-const getRandomInt = (min, max) => Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min) + 1)) + min;
-
 const sortingAlgorithms = [
     {value: "MergeSort", label: "MergeSort"},
     {value: "BubbleSort", label: "BubbleSort"},
@@ -39,12 +35,10 @@ const sortingAlgorithms = [
 
 export const SortPage = () => {
 
-    const matches = useMediaQuery('(min-width:1024px)');
-
     const minSampleCount = 10;
     const maxSampleCount = 1000;
 
-    const minSlowdownFactor = 0;
+    const minSlowdownFactor = 1;
     const maxSlowdownFactor = 60;
 
     /**
@@ -55,13 +49,13 @@ export const SortPage = () => {
      * controlData[1] = 0 - not aborted, 1 - aborted
      * controlData[2] = value - slowdown factor of notifications from worker
      */
-    const [controlData] = useState(new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 3)));
+    const [controlData] = useState(createSharedArrayBuffer(3));
 
     const [main, setMain] = useState({
-        controlData: new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 3)),
-        data: new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 100)),
-        marks: new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 100)),
-        sampleCount: 100
+        controlData: createSharedArrayBuffer(3),
+        data: createSharedArrayBuffer(10),
+        marks: createSharedArrayBuffer(10),
+        sampleCount: 10
     });
 
     const [sorted, setSorted] = useState(false);
@@ -73,13 +67,15 @@ export const SortPage = () => {
     const [color] = useState("#0085FF");
     const [dirty, setDirty] = useState(false);
 
-    const [_, forceUpdate] = useReducer((x) => x + 1, 0);
+    const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
     const windowRef = useRef(null);
 
     const messageHandlersMap = {
-        "sort": payload => forceUpdate(),
-        "shuffle": payload => onShuffleDataReceived(payload),
+        "sort": () => {
+            forceUpdate();
+        },
+        "shuffle": () => onShuffleDataReceived(),
         "sortFinished": payload => onSortFinished(payload.sorted),
     };
 
@@ -95,7 +91,7 @@ export const SortPage = () => {
         requestShuffleData();
     }, [worker, main]);
 
-    const onShuffleDataReceived = useCallback(receivedData => {
+    const onShuffleDataReceived = useCallback(() => {
         setSorted(false);
         setDirty(true);
         forceUpdate();
@@ -137,7 +133,7 @@ export const SortPage = () => {
 
     const requestShuffleData = useCallback(() => {
         setSorting(false);
-        sendMessage(worker, "shuffle", {maxValue: maxSampleCount});
+        sendMessage(worker, "shuffle", {maxValue: 256});
     }, [worker]);
 
     const initializeData = useCallback(() => {
@@ -147,22 +143,6 @@ export const SortPage = () => {
             marksData: main.marks
         });
     }, [main, worker]);
-
-    const onSlowdownFactorChange = useCallback((e) => {
-        const value = validator.toInt(e.target.value);
-
-        if (value >= 1 && value <= 50) {
-            setSlowdownFactor(value);
-        }
-    }, []);
-
-    const validateRangeInt = (str, left, right, onValidateSuccess) => {
-        const value = validator.toInt(str);
-
-        if (value >= left && value <= right) {
-            onValidateSuccess(value);
-        }
-    };
 
     useEffect(() => {
         main.controlData[2] = slowdownFactor;
@@ -178,19 +158,19 @@ export const SortPage = () => {
 
     const getStartButtonText = useCallback(() => !sorting || paused ? "Sort" : "Pause", [sorting, paused]);
 
-    const onSampleCountSliderChange = useCallback(v => {
+    const onSampleCountSliderChange = useCallback(newSampleCount => {
 
-        const newData = new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * v));
+        const newData = createSharedArrayBuffer(newSampleCount);
 
         for (let i = 0; i < newData.length; i++) {
-            newData[i] = getRandomInt(1, maxSampleCount);
+            newData[i] = getRandomUInt8(1, 256);
         }
 
         setMain({
             controlData: main.controlData,
             data: newData,
-            marks: new Int32Array(new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * v)),
-            sampleCount: v
+            marks: createSharedArrayBuffer(newSampleCount),
+            sampleCount: newSampleCount
         });
     }, [main]);
 
@@ -278,7 +258,7 @@ export const SortPage = () => {
             <StyledChart>
                 <BarsView
                     samples={main.sampleCount}
-                    maxValue={maxSampleCount}
+                    maxValue={256}
                     data={Array.from(main.data)}
                     color={color}
                     marks={main.marks}

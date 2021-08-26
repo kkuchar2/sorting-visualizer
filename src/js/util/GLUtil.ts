@@ -1,6 +1,5 @@
 import {
     DynamicDrawUsage,
-    FrontSide,
     InstancedBufferGeometry,
     InstancedMesh,
     Mesh,
@@ -23,14 +22,6 @@ export const updateInstancedMeshColor = (mesh, instanceCount, color) => {
         mesh.setColorAt(i, colorOfHash(color));
     }
     mesh.instanceColor.needsUpdate = true;
-}
-
-export const createMaterial = (color, alpha) => {
-    return new MeshBasicMaterial({
-        color: color,
-        alpha: alpha,
-        side: FrontSide
-    });
 };
 
 export const createOrthoCamera = (width, height, near, far, z) => {
@@ -48,7 +39,7 @@ export const createPerspectiveCamera = (width, height, near, far, z = 2, y = 2) 
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
     return camera;
-}
+};
 
 export const createRenderer = (width, height, clearColor) => {
     let renderer = new WebGLRenderer({alpha: true});
@@ -211,22 +202,22 @@ export const calculateBarsSizes = (width, barsCount) => {
 
     const offsetX = Math.floor((width - barsCount * (barWidth + spacing)) / 2);
 
-    return {barWidth, spacing, offsetX}
-}
+    return {barWidth, spacing, offsetX};
+};
 
 export const updateInstancedBar = (idx, mesh, value, maxValue, height, barWidth, spacing, offsetX, color) => {
     const scale = (value / maxValue) * height;
     dummyObj.scale.set(barWidth, scale, 1);
-    dummyObj.position.set(barWidth / 2 + barWidth * idx + spacing * idx + offsetX, scale / 2, 0);
+    dummyObj.position.set(barWidth / 2 + barWidth * idx + spacing * idx + offsetX + 10, scale / 2, 0);
     dummyObj.updateMatrix();
     mesh.setColorAt(idx, colorOfHash(color));
-}
+};
 
-export const createBars = (scene, width, height, data, maxValue, color) => {
+export const createBars = (scene, width, height, data, maxValue, samples, color) => {
     removeChildrenFromScene(scene);
 
     const geom = new InstancedBufferGeometry().copy(new PlaneBufferGeometry(1, 1));
-    const mesh = new InstancedMesh(geom, new MeshBasicMaterial({ color: 0xffffff, opacity: 1, transparent: false}), maxValue);
+    const mesh = new InstancedMesh(geom, new MeshBasicMaterial({ color: 0xffffff, opacity: 1, transparent: false}), samples);
     const {barWidth, spacing, offsetX} = calculateBarsSizes(width, data.length);
 
     for (let x = 0; x < data.length; x++) {
