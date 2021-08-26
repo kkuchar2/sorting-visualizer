@@ -18,7 +18,6 @@ import {
     StyledChart,
     StyledDescriptionWrapper,
     StyledSortVisualiserWindow,
-    StyledOverChartSection,
     StyledSelect,
     StyledStopStartButtons,
     StyledTitleWrapper,
@@ -209,6 +208,7 @@ export const SortPage = () => {
 
                 <StyledSelect
                     menuPortalTarget={document.body}
+                    styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
                     placeholder={'Select sorting algorithm'}
                     disabled={sorting}
                     isSearchable={false}
@@ -244,9 +244,10 @@ export const SortPage = () => {
                     </Button>
                 </StyledStopStartButtons>
 
-                <Text theme={fieldDescriptionTextTheme} text={"Number of samples:"}/>
+                <Text theme={fieldDescriptionTextTheme} text={`Samples: ${main.sampleCount}`}/>
 
                 <Slider
+                    style={{marginLeft: 20}}
                     text={"Sample count:"}
                     logarithmic={true}
                     markValues={[250, 500, 750]}
@@ -254,19 +255,22 @@ export const SortPage = () => {
                     min={minSampleCount}
                     theme={sliderTheme}
                     max={maxSampleCount}
+                    innerModernSlider={true}
                     disabled={sorting}
                     onChange={onSampleCountSliderChange}>
                 </Slider>
 
-                <Text theme={fieldDescriptionTextTheme} text={"Slowdown factor [ms]:"}/>
+                <Text theme={fieldDescriptionTextTheme} text={`Slowdown ${slowdownFactor} [ms]:`}/>
 
                 <Slider
+                    style={{marginLeft: 20}}
                     text={"Slowdown factor [ms]:"}
                     logarithmic={true}
                     markValues={[10, 20, 30, 40, 50]}
                     value={slowdownFactor}
                     min={minSlowdownFactor}
                     theme={sliderTheme}
+                    innerModernSlider={true}
                     max={maxSlowdownFactor}
                     onChange={setSlowdownFactor}>
                 </Slider>

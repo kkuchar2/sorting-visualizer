@@ -23,28 +23,34 @@ export const fieldDescriptionTextTheme = {
 };
 
 export const sliderTheme = {
-    width: "100%",
+    width: "80%",
+    height: 40,
     trackHeight: 2,
     railHeight: 2,
-    fillProgressColor: '#337dff',
-    thumbColor: '#75A7FF',
-    thumbSize: 20,
+    fillProgressColor: 'rgba(51,125,255,0)',
+    thumbColor: 'transparent',
+    thumbSize: 40,
     thumbMargin: {
-        marginTop: -10,
+        marginTop: -15,
         marginRight: 0,
         marginBottom: 0,
-        marginLeft: -5
+        marginLeft: -14
     },
+    valueLabelPositionLeft: "calc(-50% + 15px)",
     valueLabelBackground: '#337dff',
     valueLabelFontColor: '#ffffff',
-    markLabelFontColor: 'hsl(0, 0%, 20%)',
+    markLabelFontColor: '#4d4d4d',
     markLabelActiveFontColor: '#337dff',
     markLabelActiveFontWeight: 700,
-    markColor: '#75A7FF',
+    markColor: '#adadad',
     markActiveColor: '#337dff',
-    railColor: '#75A7FF',
+    railColor: '#337dff',
+    trackColor: '#e5ebff',
     markSize: 8,
     markActiveSize: 8,
+    modernMarkLabelFontSize: "1em",
+    modernMarkLabelLeftMargin: -30,
+    modernMarkLabelRightMargin: -50,
     markMargin: {
         marginTop: -3,
         marginRight: 0,
@@ -170,13 +176,15 @@ export const StyledToolbar = styled(motion.div)`
   min-width: 400px;
   max-width: 400px;
   padding: 0 20px;
-  
+  border-right: 1px solid #e8e8e8;
+
   @media (max-width: 1024px) {
     min-width: 100%;
     width: 100%;
     padding: 30px;
+    border: none;
   }
-  
+
   .algorithmSelectSection {
     display: flex;
     align-items: center;
@@ -199,14 +207,6 @@ export const StyledChart = styled(motion.div)`
   }
   // prevents from growing with inner canvas:
   overflow:hidden; 
-`;
-
-export const StyledOverChartSection = styled(motion.div)`
-  min-width: 50px;
-  display: flex;
-  height: 100px;
-  align-items: center;
-  justify-content: center;
 `;
 
 export const StyledDescriptionWrapper = styled(motion.div)`
