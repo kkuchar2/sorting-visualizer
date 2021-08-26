@@ -19,12 +19,12 @@ export const fieldDescriptionTextTheme = {
     textColor: "hsl(0, 0%, 20%)",
     fontSize: "1em",
     textAlign: "left",
-    margin: "20px 0px 20px 0px"
+    margin: "50px 0px 20px 0px"
 };
 
 export const sliderTheme = {
     width: "100%",
-    height: 40,
+    height: 30,
     trackHeight: 2,
     railHeight: 2,
     fillProgressColor: 'rgba(51,125,255,0)',
@@ -69,11 +69,11 @@ export const sliderTheme = {
 
 export const stopButtonTheme = {
     width: "50%",
-    height: "50px",
+    height: "40px",
     background: "#0085FF",
     disabledBackground: "#c4dbff",
     hoverBackground: "#336bce",
-    borderRadius: "10px",
+    borderRadius: "20px",
     border: "none",
 
     text: {
@@ -86,11 +86,11 @@ export const stopButtonTheme = {
 
 export const shuffleButtonTheme = {
     width: "200px",
-    height: "50px",
+    height: "40px",
     background: "#0085FF",
     disabledBackground: "#c4dbff",
     hoverBackground: "#336bce",
-    borderRadius: "10px",
+    borderRadius: "20px",
     border: "none",
 
     text: {
@@ -103,11 +103,11 @@ export const shuffleButtonTheme = {
 
 export const sortButtonTheme = {
     width: "50%",
-    height: "50px",
+    height: "40px",
     background: "#0085FF",
     disabledBackground: "#c4dbff",
     hoverBackground: "#336bce",
-    borderRadius: "10px",
+    borderRadius: "20px",
     border: "none",
     margin: "0px 0px 0px 10px",
 
@@ -178,6 +178,7 @@ export const StyledToolbar = styled(motion.div)`
   min-width: 400px;
   max-width: 400px;
   padding: 0 20px;
+  padding-left: 0px;
   border-right: 1px solid #e8e8e8;
 
   @media (max-width: 1024px) {

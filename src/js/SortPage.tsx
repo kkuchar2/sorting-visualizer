@@ -219,7 +219,9 @@ export const SortPage = () => {
                     </Button>
 
                     <Button
-                        style={{marginLeft: 10}}
+                        style={{
+                            marginLeft: 10,
+                        }}
                         theme={shuffleButtonTheme}
                         text={"Shuffle"}
                         onClick={requestShuffleData}
@@ -231,7 +233,7 @@ export const SortPage = () => {
                 <Text theme={fieldDescriptionTextTheme} text={`Samples: ${main.sampleCount}`}/>
 
                 <Slider
-                    style={{marginBottom: 40}}
+                    style={{marginBottom: 30}}
                     text={"Sample count:"}
                     logarithmic={true}
                     markValues={[250, 500, 750]}
@@ -247,6 +249,7 @@ export const SortPage = () => {
                 <Text theme={fieldDescriptionTextTheme} text={`Slowdown ${slowdownFactor} [ms]:`}/>
 
                 <Slider
+                    style={{marginBottom: 40}}
                     text={"Slowdown factor [ms]:"}
                     logarithmic={true}
                     markValues={[10, 20, 30, 40, 50]}
