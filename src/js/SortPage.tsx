@@ -1,8 +1,7 @@
 import React, {useCallback, useEffect, useReducer, useRef, useState} from 'react';
 import {Button, Slider, Text} from "kuchkr-react-component-library";
-
 import {BarsView} from "components/BarsView/BarsView";
-import {createSharedArrayBuffer, getRandomUInt8, useEffectWithNonNull} from 'util/util';
+import {createSharedArrayBuffer, useEffectWithNonNull} from 'util/util';
 
 import {registerSortWorker, sendMessage, unregisterWorker} from './workers/workers';
 
@@ -161,18 +160,23 @@ export const SortPage = () => {
     const onSampleCountSliderChange = useCallback(newSampleCount => {
 
         const newData = createSharedArrayBuffer(newSampleCount);
+        const newMarks = createSharedArrayBuffer(newSampleCount);
 
-        for (let i = 0; i < newData.length; i++) {
-            newData[i] = getRandomUInt8(1, 256);
-        }
+        sendMessage(worker, "initSharedData", {
+            buffer: newData,
+            controlData: main.controlData,
+            marksData: newMarks
+        });
+
+        sendMessage(worker, "shuffle", {maxValue: 256});
 
         setMain({
             controlData: main.controlData,
             data: newData,
-            marks: createSharedArrayBuffer(newSampleCount),
+            marks: newMarks,
             sampleCount: newSampleCount
         });
-    }, [main]);
+    },  [main, worker]);
 
     return <StyledSortPage>
         <StyledSortVisualiserWindow ref={windowRef}>

@@ -67,6 +67,8 @@ export const removeChildrenFromScene = scene => {
         return;
     }
     while (scene.children.length > 0) {
+        scene.children[0].geometry.dispose();
+        scene.children[0].material.dispose();
         scene.remove(scene.children[0]);
     }
 };
