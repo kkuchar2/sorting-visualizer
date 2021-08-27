@@ -21,7 +21,7 @@ import {StyledBarsView} from "./style";
 const barMarkColors = ["#0085FF", "#b3ff00", "#ff2000", "#ff6600"];
 
 export const BarsView = (props) => {
-    const {samples, maxValue, data, color, marks, algorithm, dirty} = props;
+    const {samples, maxValue, data, color, algorithm, dirty} = props;
 
     const mount = useRef(null);
 
@@ -92,7 +92,7 @@ export const BarsView = (props) => {
 
             for (let x = 0; x < samples; x++) {
                 updateInstancedBar(x, mesh, data[x], maxValue, height, barWidth, spacing, offsetX, color);
-                mesh.setColorAt(x, colorOfHash(barMarkColors[marks[x]]));
+                // mesh.setColorAt(x, colorOfHash(barMarkColors[marks[x]]));
                 mesh.setMatrixAt(x, dummyObj.matrix);
             }
 
@@ -118,7 +118,7 @@ export const BarsView = (props) => {
         createOrUpdateBars();
         renderer.setSize(width, height);
         renderer.render(scene, camera);
-    }, [algorithm, dirty, data, width, height, color, marks]);
+    }, [algorithm, dirty, data, width, height, color]);
 
     return <StyledBarsView ref={mount}/>;
 };

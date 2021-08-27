@@ -1,4 +1,3 @@
-import Select from "react-select";
 import styled from "styled-components";
 import {motion} from "framer-motion";
 
@@ -84,6 +83,27 @@ export const stopButtonTheme = {
     }
 };
 
+export const selectTheme = {
+    width: "100%",
+    height: 50,
+    boxShadow: "none",
+    border: 'none',
+    backgroundColor: '#edf1f6',
+    placeholderTextColor: '#3a3a3a',
+    selectedSingleValueTextColor: '#2b2b2b',
+    arrowColor: '#5d5959',
+    arrowColorHover: '#5d5959',
+    indicatorSeparatorColor: '#afafaf',
+    borderRadius: 4,
+    listBorderRadius: 4,
+    listBackgroundColor: '#edf1f6',
+    listItemTextColor: "#343434",
+    itemHoverBackgroundColor: '#0085FF',
+    itemSelectedBackgroundColor: '#55aaff',
+    itemHoverTextColor:  '#ffffff',
+    listItemHeight: 50
+};
+
 export const shuffleButtonTheme = {
     width: "200px",
     height: "40px",
@@ -118,15 +138,6 @@ export const sortButtonTheme = {
         fontSize: '1.2em'
     }
 };
-
-export const StyledSelect = styled(Select)`
-    margin-top: 20px;
-`;
-
-export const StyledTopSection = styled.div`
-  padding: 20px 20px 0;
-  height: 180px;
-`;
 
 export const StyledStopStartButtons = styled.div`
   display: flex;
@@ -168,6 +179,32 @@ export const StyledSortVisualiserWindow = styled.div`
   }
 `;
 
+export const StyledSortVisualiserWindow2 = styled.div`
+  padding: 20px;
+  box-shadow: 0 0 150px 36px rgba(0, 117, 255, 0.26);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 50%;
+  min-width: 900px;
+  height: 700px;
+  border-radius: 10px;
+  background: white;
+  overflow: auto;
+  
+  @media (max-width: 1024px) {
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    border-radius: 0;
+    height: 100%;
+    max-height: 100%;
+    min-width: 100%;
+    text-align: center;
+  }
+`;
+
 export const StyledToolbar = styled(motion.div)`
   border-bottom-left-radius: 10px;
   border-top-left-radius: 10px;
@@ -177,8 +214,7 @@ export const StyledToolbar = styled(motion.div)`
   width: 400px;
   min-width: 400px;
   max-width: 400px;
-  padding: 0 20px;
-  padding-left: 0px;
+  padding: 0 20px 0 0;
   border-right: 1px solid #e8e8e8;
 
   @media (max-width: 1024px) {
@@ -220,19 +256,13 @@ export const StyledTitleWrapper = styled(motion.div)`
   max-width: 300px;
 `;
 
-export const animatedWindowProps = {
-    initial: { opacity: 0, y: -50},
-    animate: { opacity: 1, y: 0},
-    transition: {type: "spring", stiffness: 1060, damping: 30, delay: 0.3}
-};
-
-export const animatedWindowProps2 = {
+export const animatedProps = {
     initial: {opacity: 0, y: -50},
     animate: {opacity: 1, y: 0},
     transition: {type: "spring", stiffness: 560, damping: 30, delay: 0.2}
 };
 
-export const animatedWindowProps3 = {
+export const animatedProps2 = {
     initial: {opacity: 0, y: -50},
     animate: {opacity: 1, y: 0},
     transition: {type: "spring", stiffness: 560, damping: 30, delay: 0.1}

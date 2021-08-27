@@ -65,8 +65,9 @@ module.exports = {
     devServer: {
         port: 3000,
         host: "localhost",
-        disableHostCheck: true,
         historyApiFallback: true,
+        open: true,
+        hot: false,
         headers: {
             "Cross-Origin-Opener-Policy": "same-origin",
             "Cross-Origin-Embedder-Policy": "require-corp",

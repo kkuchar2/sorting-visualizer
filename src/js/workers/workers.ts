@@ -17,16 +17,15 @@ export const unregisterWorker = (worker) => {
     }
 };
 
-export const sendMessage = (worker, messageType, payload = []) => {
+export const sendMessage = (worker, messageType, payload = {}) => {
     worker.postMessage({ type: messageType, payload: payload });
 };
 
-export const registerSortWorker = (handler, sharedBuffer, controlSharedBuffer, marksSharedBuffer) => {
+export const registerSortWorker = (handler, sharedBuffer, controlSharedBuffer) => {
     const worker = registerWorker(new Worker(new URL('sort.worker.js', import.meta.url)), handler);
     sendMessage(worker, "initSharedData", {
         buffer: sharedBuffer,
         controlData: controlSharedBuffer,
-        marksData: marksSharedBuffer
     });
     return worker;
 };

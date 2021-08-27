@@ -1,14 +1,8 @@
-import {lazy, useEffect} from "react";
-
-import packageJson from '../../../package.json';
-
-export const getBuildDate = () => packageJson.buildDate;
+import {useEffect} from "react";
 
 export const getParentHeight = thisMount => thisMount.current.offsetHeight;
 
 export const getParentWidth = thisMount => thisMount.current.offsetWidth;
-
-export const lazyImport = importFunc => lazy(() => retry(() => importFunc()));
 
 export const retry = (func, retriesLeft = 5, interval = 1000) =>
     new Promise((resolve, reject) => func()

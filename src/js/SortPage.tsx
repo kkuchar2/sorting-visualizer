@@ -1,28 +1,28 @@
 import React, {useCallback, useEffect, useReducer, useRef, useState} from 'react';
-import {Button, Slider, Text} from "kuchkr-react-component-library";
+import {Button, Select, Slider, Text} from "kuchkr-react-component-library";
 import {BarsView} from "components/BarsView/BarsView";
 import {createSharedArrayBuffer, useEffectWithNonNull} from 'util/util';
 
 import {registerSortWorker, sendMessage, unregisterWorker} from './workers/workers';
 
 import {
-    animatedWindowProps2,
-    animatedWindowProps3,
+    animatedProps,
+    animatedProps2,
     descriptionTextTheme,
     fieldDescriptionTextTheme,
+    selectTheme,
     shuffleButtonTheme,
     sliderTheme,
     sortButtonTheme,
     stopButtonTheme,
     StyledChart,
     StyledDescriptionWrapper,
+    StyledSortPage,
     StyledSortVisualiserWindow,
-    StyledSelect,
     StyledStopStartButtons,
     StyledTitleWrapper,
     StyledToolbar,
-    titleTextTheme,
-    StyledSortPage
+    titleTextTheme
 } from "./style.js";
 
 const sortingAlgorithms = [
@@ -52,9 +52,8 @@ export const SortPage = () => {
 
     const [main, setMain] = useState({
         controlData: createSharedArrayBuffer(3),
-        data: createSharedArrayBuffer(10),
-        marks: createSharedArrayBuffer(10),
-        sampleCount: 10
+        data: createSharedArrayBuffer(100),
+        sampleCount: 100
     });
 
     const [sorted, setSorted] = useState(false);
@@ -139,7 +138,6 @@ export const SortPage = () => {
         sendMessage(worker, "initSharedData", {
             buffer: main.data,
             controlData: main.controlData,
-            marksData: main.marks
         });
     }, [main, worker]);
 
@@ -160,12 +158,10 @@ export const SortPage = () => {
     const onSampleCountSliderChange = useCallback(newSampleCount => {
 
         const newData = createSharedArrayBuffer(newSampleCount);
-        const newMarks = createSharedArrayBuffer(newSampleCount);
 
         sendMessage(worker, "initSharedData", {
             buffer: newData,
             controlData: main.controlData,
-            marksData: newMarks
         });
 
         sendMessage(worker, "shuffle", {maxValue: 256});
@@ -173,33 +169,32 @@ export const SortPage = () => {
         setMain({
             controlData: main.controlData,
             data: newData,
-            marks: newMarks,
             sampleCount: newSampleCount
         });
-    },  [main, worker]);
+    }, [main, worker]);
 
     return <StyledSortPage>
         <StyledSortVisualiserWindow ref={windowRef}>
-            <StyledToolbar {...animatedWindowProps3}>
+            <StyledToolbar {...animatedProps2}>
 
-                <StyledTitleWrapper {...animatedWindowProps2}>
+                <StyledTitleWrapper {...animatedProps}>
                     <Text theme={titleTextTheme} text={"Sorting Visualiser"}/>
                 </StyledTitleWrapper>
 
-                <StyledDescriptionWrapper {...animatedWindowProps2}>
+                <StyledDescriptionWrapper {...animatedProps}>
                     <Text theme={descriptionTextTheme} text={"Realtime visualizer for common sorting algorithms"}/>
                 </StyledDescriptionWrapper>
 
-                <StyledSelect
-                    menuPortalTarget={document.body}
-                    styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
+                <Select
+                    style={{marginTop: 20}}
+                    theme={selectTheme}
                     placeholder={'Select sorting algorithm'}
                     disabled={sorting}
                     isSearchable={false}
                     options={sortingAlgorithms}
                     value={selectedAlgorithm}
                     onChange={setSelectedAlgorithm}>
-                </StyledSelect>
+                </Select>
 
                 <StyledStopStartButtons>
                     <Button
@@ -268,7 +263,6 @@ export const SortPage = () => {
                     maxValue={256}
                     data={Array.from(main.data)}
                     color={color}
-                    marks={main.marks}
                     algorithm={selectedAlgorithm}
                     dirty={dirty}/>
             </StyledChart>

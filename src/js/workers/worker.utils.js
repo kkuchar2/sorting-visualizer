@@ -54,7 +54,7 @@ export const markExclusive = (idx, color = 0) => {
     for (let i = 0; i < sortState.marks.length; i++) {
         sortState.marks[i] = 0;
     }
-    sortState.marks[idx] = 2;
+    sortState.marks[idx] = color;
 };
 
 export const unmark = (idx) => {
@@ -87,7 +87,7 @@ export const shuffle = async (maxValue) => {
 };
 
 export const PromiseTimeout = delay => {
-    return new Promise((resolve, reject) => setTimeout(resolve, delay));
+    return new Promise((resolve,) => setTimeout(resolve, delay));
 };
 
 export const CheckSortPause = async (delay = 0) => {
