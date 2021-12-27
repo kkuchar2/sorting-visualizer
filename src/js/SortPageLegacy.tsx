@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyledSortPage, StyledSortVisualiserWindow2} from "./style.js";
+import {StyledSortPage, StyledSortVisualiserWindow2} from "./style";
 
 export const SortPageLegacy = () => {
 

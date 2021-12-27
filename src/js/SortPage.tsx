@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useReducer, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useReducer, useState} from 'react';
 import {Button, Select, Slider, Text} from "kuchkr-react-component-library";
 import {BarsView} from "components/BarsView/BarsView";
 import {createSharedArrayBuffer, useEffectWithNonNull} from 'util/util';
@@ -6,24 +6,24 @@ import {createSharedArrayBuffer, useEffectWithNonNull} from 'util/util';
 import {registerSortWorker, sendMessage, unregisterWorker} from './workers/workers';
 
 import {
-    animatedProps,
-    animatedProps2,
-    descriptionTextTheme,
-    fieldDescriptionTextTheme,
+    samplesTextTheme,
+    samplesValueTextTheme,
     selectTheme,
     shuffleButtonTheme,
     sliderTheme,
     sortButtonTheme,
-    stopButtonTheme,
+    sortTextTheme,
+    stopPauseButtonTheme,
     StyledChart,
-    StyledDescriptionWrapper,
+    StyledControlsSection,
+    StyledDoubleButton,
+    StyledShuffle,
+    StyledSortButtonContent,
     StyledSortPage,
-    StyledSortVisualiserWindow,
-    StyledStopStartButtons,
-    StyledTitleWrapper,
-    StyledToolbar,
+    StyledStopStartPauseButtons,
+    StyledTitleSection,
     titleTextTheme
-} from "./style.js";
+} from "./style";
 
 const sortingAlgorithms = [
     {value: "MergeSort", label: "MergeSort"},
@@ -52,8 +52,8 @@ export const SortPage = () => {
 
     const [main, setMain] = useState({
         controlData: createSharedArrayBuffer(3),
-        data: createSharedArrayBuffer(100),
-        sampleCount: 100
+        data: createSharedArrayBuffer(20),
+        sampleCount: 20
     });
 
     const [sorted, setSorted] = useState(false);
@@ -62,12 +62,10 @@ export const SortPage = () => {
     const [selectedAlgorithm, setSelectedAlgorithm] = useState(sortingAlgorithms[0]);
     const [slowdownFactor, setSlowdownFactor] = useState(minSlowdownFactor);
     const [worker, setWorker] = useState(null);
-    const [color] = useState("#0085FF");
+    const [color] = useState("#606060");
     const [dirty, setDirty] = useState(false);
 
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
-
-    const windowRef = useRef(null);
 
     const messageHandlersMap = {
         "sort": () => {
@@ -80,7 +78,6 @@ export const SortPage = () => {
     useEffect(() => {
         const onMessageReceived = e => messageHandlersMap[e.data.type](e.data.payload);
         setWorker(registerSortWorker(onMessageReceived, main.data, controlData));
-        windowRef.current.scrollTop = -windowRef.current.scrollHeight;
         return () => unregisterWorker(worker);
     }, []);
 
@@ -100,34 +97,30 @@ export const SortPage = () => {
         setSorted(isSorted);
     }, []);
 
-    const onStartPauseButtonPressed = useCallback(() => {
+    const onSortButtonPressed = useCallback(() => {
         setDirty(false);
-
-        if (sorted) {
-            return;
-        }
-
-        if (sorting && !paused) {
-            setPaused(true);
-            main.controlData[0] = 1;
-        } else if (!sorting && paused) {
-            main.controlData[0] = 0;
-            setPaused(false);
-        } else if (sorting && paused && !sorted) {
-            main.controlData[0] = 0;
-            setPaused(false);
-        } else if (!sorting && !sorted) {
-            main.controlData[0] = 0;
-            main.controlData[1] = 0;
-            setPaused(false);
-            setSorting(true);
-            sendMessage(worker, "sort", {algorithm: selectedAlgorithm.value});
-        }
+        main.controlData[0] = 0;
+        main.controlData[1] = 0;
+        setPaused(false);
+        setSorting(true);
+        sendMessage(worker, "sort", {algorithm: selectedAlgorithm.value});
     }, [worker, sorting, sorted, selectedAlgorithm, paused, slowdownFactor]);
 
     const onStopButtonPressed = useCallback(() => {
         main.controlData[1] = 1;
+        setPaused(false);
+        setSorting(false);
     }, [worker]);
+
+    const onPauseButtonPressed = useCallback(() => {
+        setPaused(true);
+        main.controlData[0] = 1;
+    }, [worker]);
+
+    const onResumeButtonPressed = useCallback(() => {
+        setPaused(false);
+        main.controlData[0] = 0;
+    }, []);
 
     const requestShuffleData = useCallback(() => {
         setSorting(false);
@@ -149,12 +142,6 @@ export const SortPage = () => {
         sendMessage(worker, "setSlowdownFactor", {value: slowdownFactor});
     }, [slowdownFactor, worker]);
 
-    const getPlayPauseIcon = useCallback(() => {
-        return !sorting || paused ? 'images/play_icon.png' : 'images/pause_icon.png';
-    }, [sorting, paused]);
-
-    const getStartButtonText = useCallback(() => !sorting || paused ? "Sort" : "Pause", [sorting, paused]);
-
     const onSampleCountSliderChange = useCallback(newSampleCount => {
 
         const newData = createSharedArrayBuffer(newSampleCount);
@@ -173,99 +160,79 @@ export const SortPage = () => {
         });
     }, [main, worker]);
 
+    const renderButton = useCallback(() => {
+        if (sorting && !paused) {
+            return <StyledDoubleButton>
+                <Button theme={stopPauseButtonTheme} onClick={onPauseButtonPressed} text={"Pause"}/>
+                <Button theme={stopPauseButtonTheme} onClick={onStopButtonPressed} text={"Stop"}/>
+            </StyledDoubleButton>;
+        } else if (paused) {
+            return <StyledDoubleButton>
+                <Button theme={stopPauseButtonTheme} onClick={onResumeButtonPressed} text={"Resume"}/>
+                <Button theme={stopPauseButtonTheme} onClick={onStopButtonPressed} text={"Stop"}/>
+            </StyledDoubleButton>;
+        }
+        return <Button
+            theme={sortButtonTheme}
+            onClick={onSortButtonPressed}
+            title={sorted ? 'Shuffle first please' : 'Click to sort data'}
+            disabled={sorted}>
+            <StyledSortButtonContent>
+                <Text theme={sortTextTheme(sorted)} text={"Sort!"}/>
+            </StyledSortButtonContent>
+        </Button>;
+
+    }, [sorting, sorted, paused, onSortButtonPressed, onPauseButtonPressed, onStopButtonPressed, onResumeButtonPressed]);
+
     return <StyledSortPage>
-        <StyledSortVisualiserWindow ref={windowRef}>
-            <StyledToolbar {...animatedProps2}>
+        <StyledControlsSection>
+            <Select
+                style={{marginTop: 20}}
+                theme={selectTheme}
+                placeholder={'Select sorting algorithm'}
+                disabled={sorting}
+                isSearchable={false}
+                options={sortingAlgorithms}
+                value={selectedAlgorithm}
+                onChange={setSelectedAlgorithm}>
+            </Select>
 
-                <StyledTitleWrapper {...animatedProps}>
-                    <Text theme={titleTextTheme} text={"Sorting Visualiser"}/>
-                </StyledTitleWrapper>
+            <div style={{marginTop: 50, display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                <Text theme={samplesTextTheme} text={`Samples:`}/>
+                <Text theme={samplesValueTextTheme} text={`${main.sampleCount}`}/>
+            </div>
 
-                <StyledDescriptionWrapper {...animatedProps}>
-                    <Text theme={descriptionTextTheme} text={"Realtime visualizer for common sorting algorithms"}/>
-                </StyledDescriptionWrapper>
+            <Slider
+                style={{marginBottom: 30}}
+                text={"Sample count:"}
+                logarithmic={true}
+                value={main.sampleCount}
+                min={minSampleCount}
+                theme={sliderTheme}
+                max={maxSampleCount}
+                useMarks={false}
+                innerModernSlider={true}
+                disabled={sorting}
+                onChange={onSampleCountSliderChange}>
+            </Slider>
 
-                <Select
-                    style={{marginTop: 20}}
-                    theme={selectTheme}
-                    placeholder={'Select sorting algorithm'}
-                    disabled={sorting}
-                    isSearchable={false}
-                    options={sortingAlgorithms}
-                    value={selectedAlgorithm}
-                    onChange={setSelectedAlgorithm}>
-                </Select>
+            <StyledShuffle>
+                <Button theme={shuffleButtonTheme} text={"Shuffle"} onClick={requestShuffleData}/>
+            </StyledShuffle>
 
-                <StyledStopStartButtons>
-                    <Button
-                        theme={stopButtonTheme}
-                        onClick={onStopButtonPressed}
-                        text={"Stop"}
-                        disabled={!sorting || paused}>
-                        <img src={'/images/stop_icon.png'} width={12} height={12} alt={""}/>
-                    </Button>
+            <StyledStopStartPauseButtons>
+                {renderButton()}
+            </StyledStopStartPauseButtons>
+        </StyledControlsSection>
 
-                    <Button
-                        theme={sortButtonTheme}
-                        onClick={onStartPauseButtonPressed}
-                        text={getStartButtonText()}
-                        disabled={sorted}>
-                        <img src={getPlayPauseIcon()} width={12} height={12} alt={""}/>
-                    </Button>
-
-                    <Button
-                        style={{
-                            marginLeft: 10,
-                        }}
-                        theme={shuffleButtonTheme}
-                        text={"Shuffle"}
-                        onClick={requestShuffleData}
-                        disabled={sorting}>
-                        <img src={'/images/shuffle_icon.png'} width={12} height={12} alt={""}/>
-                    </Button>
-                </StyledStopStartButtons>
-
-                <Text theme={fieldDescriptionTextTheme} text={`Samples: ${main.sampleCount}`}/>
-
-                <Slider
-                    style={{marginBottom: 30}}
-                    text={"Sample count:"}
-                    logarithmic={true}
-                    markValues={[250, 500, 750]}
-                    value={main.sampleCount}
-                    min={minSampleCount}
-                    theme={sliderTheme}
-                    max={maxSampleCount}
-                    innerModernSlider={true}
-                    disabled={sorting}
-                    onChange={onSampleCountSliderChange}>
-                </Slider>
-
-                <Text theme={fieldDescriptionTextTheme} text={`Slowdown ${slowdownFactor} [ms]:`}/>
-
-                <Slider
-                    style={{marginBottom: 40}}
-                    text={"Slowdown factor [ms]:"}
-                    logarithmic={true}
-                    markValues={[10, 20, 30, 40, 50]}
-                    value={slowdownFactor}
-                    min={minSlowdownFactor}
-                    theme={sliderTheme}
-                    innerModernSlider={true}
-                    max={maxSlowdownFactor}
-                    onChange={setSlowdownFactor}>
-                </Slider>
-            </StyledToolbar>
-
-            <StyledChart>
-                <BarsView
-                    samples={main.sampleCount}
-                    maxValue={256}
-                    data={Array.from(main.data)}
-                    color={color}
-                    algorithm={selectedAlgorithm}
-                    dirty={dirty}/>
-            </StyledChart>
-        </StyledSortVisualiserWindow>
+        <StyledChart>
+            <BarsView
+                samples={main.sampleCount}
+                maxValue={256}
+                data={Array.from(main.data)}
+                color={color}
+                algorithm={selectedAlgorithm}
+                dirty={dirty}/>
+        </StyledChart>
     </StyledSortPage>;
 };

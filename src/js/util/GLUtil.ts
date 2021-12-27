@@ -179,7 +179,7 @@ export const calculateBarsSizes = (width, barsCount) => {
     let targetSpacing = -1;
 
     while (barWidth <= maxBarWidth) {
-        while (spacing <= 5) {
+        while (spacing <= 1) {
             let diff = width - barsCount * (barWidth + spacing);
 
             if (diff < min && diff > 0) {

@@ -41,9 +41,7 @@ export const notify = (type, payload, skipMessagesByTime = false, slowDownFactor
 export const notifySortDataShuffled = () => notify("shuffle", [], false, false);
 
 export const notifySortUpdate = (forceSend = false) => {
-    notify("sort", {
-        marks: sortState.marks
-    }, !forceSend, true, 16);
+    notify("sort", { marks: sortState.marks }, !forceSend, true, 16);
 };
 
 export const mark = (idx, color = 0) => {
@@ -63,14 +61,7 @@ export const unmark = (idx) => {
 
 export const setSlowdownFactor = (m) => SLOWDOWN_FACTOR_MS = m.value;
 
-export const onSortMethodExit = () => {
-    for (let i = 0; i < sortState.data.length; i++) {
-        mark(i, 3);
-        notifySortUpdate();
-    }
-    notifySortUpdate(true);
-    postMessage({type: "sortFinished", payload: {"sorted": !IsAborted()}});
-};
+export const onSortMethodExit = () => postMessage({type: "sortFinished", payload: {"sorted": !IsAborted()}});
 
 export const getSortMethod = (algorithm) => sortAlgorithmMap[algorithm];
 
@@ -97,6 +88,3 @@ export const CheckSortPause = async (delay = 0) => {
 };
 
 export const IsAborted = () => sortState.controlData[1] === 1;
-
-export class resetState {
-}
