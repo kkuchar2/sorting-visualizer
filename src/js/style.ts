@@ -7,8 +7,6 @@ export const StyledSortPage = styled.div`
   min-width: 10px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  overflow: auto;
   flex-direction: column;
   background: #212121;
 `;
@@ -19,7 +17,7 @@ export const StyledControlsSection = styled.div`
   justify-content: center;
   align-items: center;
   max-height: 70%;
-  overflow-y: scroll;
+  overflow-y: auto;
   width: 100%;
 `;
 
@@ -101,16 +99,17 @@ export const sliderTheme = {
 export const stopPauseButtonTheme = {
     width: "50%",
     height: "50px",
-    background: "none",
+    background: "#646875",
     disabledBackground: "#c4dbff",
-    hoverBackground: "#293d50",
+    hoverBackground: "#727786",
     border: "none",
 
     text: {
         textColor: "#ffffff",
         disabledTextColor: "rgba(255,255,255,1)",
         textAlign: 'center',
-        fontSize: '1.2em'
+        fontSize: '1.2em',
+        fontWeight: 600
     }
 };
 
