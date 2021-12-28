@@ -210,7 +210,7 @@ export const calculateBarsSizes = (width, barsCount) => {
 export const updateInstancedBar = (idx, mesh, value, maxValue, height, barWidth, spacing, offsetX, color) => {
     const scale = (value / maxValue) * height;
     dummyObj.scale.set(barWidth, scale, 1);
-    dummyObj.position.set(barWidth / 2 + barWidth * idx + spacing * idx + offsetX + 10, scale / 2, 0);
+    dummyObj.position.set(barWidth / 2 + barWidth * idx + spacing * idx + offsetX, scale / 2, 0);
     dummyObj.updateMatrix();
     mesh.setColorAt(idx, colorOfHash(color));
 };

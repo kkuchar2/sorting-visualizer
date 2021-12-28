@@ -1,4 +1,4 @@
-import { CheckSortPause, IsAborted, mark, notifySortUpdate, sortState } from "workers/worker.utils.js";
+import { CheckSortPause, IsAborted, mark, notifySortUpdate, sortState } from "../worker.utils";
 
 const partition = (left, right) => {
     const pivot = sortState.data[Math.floor((right + left) / 2)];

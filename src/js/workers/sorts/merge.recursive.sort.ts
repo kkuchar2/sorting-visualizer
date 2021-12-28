@@ -1,4 +1,4 @@
-import { CheckSortPause, IsAborted, mark, notifySortUpdate, sortState, unmark } from "workers/worker.utils.js";
+import { CheckSortPause, IsAborted, mark, notifySortUpdate, sortState, unmark } from "../worker.utils";
 
 const merge = async (start, mid, end) => {
     if (IsAborted()) {

@@ -1,5 +1,5 @@
-import { getRandomUInt8 } from "../util/util.ts";
-import { bubbleSort, insertionSort, mergeSortRecursive, quickSort } from "workers/sorts";
+import { bubbleSort, insertionSort, mergeSortRecursive, quickSort } from "./sorts";
+import {getRandomUInt8} from "util/util";
 
 let SLOWDOWN_FACTOR_MS = 1;
 

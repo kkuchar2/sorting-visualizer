@@ -63,6 +63,6 @@ export const getRandomUInt8 = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-export const createSharedArrayBuffer = (count) => {
+export const createSAB = (count) => {
     return new Uint8Array(new SharedArrayBuffer(Uint8Array.BYTES_PER_ELEMENT * count));
 };

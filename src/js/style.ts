@@ -98,7 +98,7 @@ export const sliderTheme = {
     markLabelActiveFontWeight: 700,
     markColor: '#adadad',
     markActiveColor: '#9A9FB4',
-    railColor: '#5d63ad',
+    railColor: '#3f3f3f',
     trackColor: '#1a1a1a',
     markSize: 8,
     markActiveSize: 8,
@@ -125,13 +125,13 @@ export const stopPauseButtonTheme = {
     width: "50%",
     height: "50px",
     background: "#000000",
-    disabledBackground: "#c4dbff",
-    hoverBackground: "#727786",
+    disabledBackground: "rgba(0,0,0,0.37)",
+    hoverBackground: "#5d63ad",
     border: "none",
 
     text: {
         textColor: "#ffffff",
-        disabledTextColor: "rgba(255,255,255,1)",
+        disabledTextColor: "rgba(255,255,255,0.26)",
         textAlign: 'center',
         fontSize: '1.2em',
         fontWeight: 600
@@ -145,7 +145,7 @@ export const selectTheme = {
 
     // List
     listBorderRadius: 14,
-    listBackgroundColor: '#1a1a1a',
+    listBackgroundColor: '#2c2c2c',
 
     // List item
     itemHeight: 40,
@@ -159,6 +159,7 @@ export const selectTheme = {
 
     // Selected value
     selectedValueTextColor: '#c0c0c0',
+    selectedValueDisabledTextColor: 'rgba(192,192,192,0.37)',
     selectedValueFontWeight: 600,
     selectedValueFontSize: '1.0em',
 
@@ -191,10 +192,10 @@ export const selectTheme = {
 export const shuffleButtonTheme = {
     width: "200px",
     height: "50px",
-    background: "#000000",
+    background: "#3e48b2",
     disabledBackground: "rgba(0,0,0,0.32)",
     hoverBackground: "#2d2d2d",
-    borderRadius: "10px",
+    borderRadius: "5px",
     border: "none",
 
     text: {
@@ -202,7 +203,7 @@ export const shuffleButtonTheme = {
         disabledTextColor: "rgb(108,108,108)",
         textAlign: 'center',
         fontSize: '1.2em',
-        fontWeight: 600
+        fontWeight: 800
     }
 };
 
@@ -267,6 +268,7 @@ export const StyledDoubleButton = styled.div`
   background: #33495F;
   align-items: center;
   justify-content: center;
+  margin-top: 20px;
 `;
 
 export const StyledSortVisualiserWindow2 = styled.div`
@@ -309,6 +311,11 @@ export const StyledChart = styled(motion.div)`
   overflow: hidden;
 
   @media (max-width: 1024px) {
+    width: 100%;
+    padding: 0;
+  }
+
+  @media (max-height: 1024px) {
     width: 100%;
     padding: 0;
   }

@@ -4,7 +4,7 @@ import {
     onSortMethodExit,
     setSlowdownFactor,
     shuffle
-} from "workers/worker.utils.js";
+} from "./worker.utils";
 
 /* -------------- Main message handler ------------------ */
 
@@ -28,5 +28,5 @@ const onSortRequest = msg => {
 };
 
 const onShuffleRequest = msg => {
-    shuffle(msg.maxValue, msg.window).then(notifySortDataShuffled);
+    shuffle(msg.maxValue).then(notifySortDataShuffled);
 };

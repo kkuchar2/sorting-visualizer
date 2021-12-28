@@ -4,7 +4,7 @@ import {
     markExclusive,
     notifySortUpdate,
     sortState
-} from "workers/worker.utils.js";
+} from "../worker.utils";
 
 export const bubbleSort = async () => {
     let len = sortState.data.length;
