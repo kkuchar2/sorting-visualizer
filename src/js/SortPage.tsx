@@ -1,13 +1,14 @@
 import React, {useCallback, useEffect, useReducer, useState} from 'react';
-import {Button, Select, Slider, Text} from "kuchkr-react-component-library";
+import {Button, Select, Slider, Text, Input} from "kuchkr-react-component-library";
 import {BarsView} from "components/BarsView/BarsView";
 import {createSharedArrayBuffer, useEffectWithNonNull} from 'util/util';
 
 import {registerSortWorker, sendMessage, unregisterWorker} from './workers/workers';
 
 import {
+    inputErrorTextTheme,
     samplesTextTheme,
-    samplesValueTextTheme,
+    samplesValueInputTheme,
     selectTheme,
     shuffleButtonTheme,
     sliderTheme,
@@ -63,6 +64,7 @@ export const SortPage = () => {
     const [slowdownFactor, setSlowdownFactor] = useState(minSlowdownFactor);
     const [worker, setWorker] = useState(null);
     const [color] = useState("#606060");
+    const [colorDisabled] = useState("#2f2f2f");
     const [dirty, setDirty] = useState(false);
 
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
@@ -142,7 +144,20 @@ export const SortPage = () => {
         sendMessage(worker, "setSlowdownFactor", {value: slowdownFactor});
     }, [slowdownFactor, worker]);
 
-    const onSampleCountSliderChange = useCallback(newSampleCount => {
+    const updateSampleCount = useCallback(newSampleCount => {
+
+        if (!worker) {
+            return;
+        }
+
+        if (!isSampleCountValid(newSampleCount)) {
+            setMain({
+                controlData: main.controlData,
+                data: main.data,
+                sampleCount: newSampleCount
+            });
+            return;
+        }
 
         const newData = createSharedArrayBuffer(newSampleCount);
 
@@ -172,17 +187,34 @@ export const SortPage = () => {
                 <Button theme={stopPauseButtonTheme} onClick={onStopButtonPressed} text={"Stop"}/>
             </StyledDoubleButton>;
         }
+
+        const operationsDisabled = sorted || !(main.sampleCount >= minSampleCount && main.sampleCount <= maxSampleCount);
+
         return <Button
             theme={sortButtonTheme}
             onClick={onSortButtonPressed}
             title={sorted ? 'Shuffle first please' : 'Click to sort data'}
-            disabled={sorted}>
+            disabled={operationsDisabled}>
             <StyledSortButtonContent>
-                <Text theme={sortTextTheme(sorted)} text={"Sort!"}/>
+                <Text theme={sortTextTheme(operationsDisabled)} text={"Sort!"}/>
             </StyledSortButtonContent>
         </Button>;
 
-    }, [sorting, sorted, paused, onSortButtonPressed, onPauseButtonPressed, onStopButtonPressed, onResumeButtonPressed]);
+    }, [sorting, sorted, paused, onSortButtonPressed, onPauseButtonPressed, onStopButtonPressed, onResumeButtonPressed, main]);
+
+    const isSampleCountValid = useCallback((v) => {
+        return v >= minSampleCount && v <= maxSampleCount;
+    }, [main]);
+
+    const renderInputError = useCallback(() => {
+        if (main.sampleCount >= minSampleCount && main.sampleCount <= maxSampleCount) {
+            return null;
+        }
+
+        return <Text theme={inputErrorTextTheme} text={`Must be number in [${minSampleCount}, ${maxSampleCount}] range`} />
+    }, [main]);
+
+    const operationsDisabled = !(main.sampleCount >= minSampleCount && main.sampleCount <= maxSampleCount);
 
     return <StyledSortPage>
         <StyledControlsSection>
@@ -199,25 +231,33 @@ export const SortPage = () => {
 
             <div style={{marginTop: 50, display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                 <Text theme={samplesTextTheme} text={`Samples:`}/>
-                <Text theme={samplesValueTextTheme} text={`${main.sampleCount}`}/>
+                <Input
+                    onChange={updateSampleCount}
+                    style={{marginTop: 20, marginBottom: 20}}
+                    theme={samplesValueInputTheme}
+                    title={null}
+                    value={main.sampleCount.toString()}
+                    placeholder={'Enter sample count'}
+                    initialValue={`${main.sampleCount}`}/>
+                {renderInputError()}
             </div>
 
             <Slider
-                style={{marginBottom: 30}}
+                style={{marginBottom: 30, zIndex: 0}}
                 text={"Sample count:"}
                 logarithmic={true}
-                value={main.sampleCount}
+                value={Math.max(main.data.length, main.sampleCount)}
                 min={minSampleCount}
                 theme={sliderTheme}
                 max={maxSampleCount}
                 useMarks={false}
                 innerModernSlider={true}
                 disabled={sorting}
-                onChange={onSampleCountSliderChange}>
+                onChange={updateSampleCount}>
             </Slider>
 
             <StyledShuffle>
-                <Button theme={shuffleButtonTheme} text={"Shuffle"} onClick={requestShuffleData}/>
+                <Button theme={shuffleButtonTheme} text={"Shuffle"} disabled={operationsDisabled} onClick={requestShuffleData}/>
             </StyledShuffle>
 
             <StyledStopStartPauseButtons>
@@ -227,10 +267,10 @@ export const SortPage = () => {
 
         <StyledChart>
             <BarsView
-                samples={main.sampleCount}
+                samples={Math.max(main.data.length, main.sampleCount)}
                 maxValue={256}
                 data={Array.from(main.data)}
-                color={color}
+                color={isSampleCountValid(main.sampleCount) ? color : colorDisabled}
                 algorithm={selectedAlgorithm}
                 dirty={dirty}/>
         </StyledChart>

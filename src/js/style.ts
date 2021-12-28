@@ -19,6 +19,7 @@ export const StyledControlsSection = styled.div`
   max-height: 70%;
   overflow-y: auto;
   width: 100%;
+  margin-top: 50px;
 `;
 
 export const titleTextTheme = {
@@ -43,12 +44,36 @@ export const samplesTextTheme = {
     margin: "0px 0px 20px 0px"
 };
 
-export const samplesValueTextTheme = {
-    textColor: "#b9b9b9",
-    fontSize: "1.6em",
+export const inputErrorTextTheme = {
+    textColor: "#c22c2c",
+    fontSize: "1.2em",
     fontWeight: 800,
     textAlign: "left",
     margin: "0px 0px 20px 0px"
+};
+
+export const samplesValueInputTheme = {
+    backgroundColor: "none",
+    border: "none",
+    borderFocus: "none",
+    borderRadius: "0",
+    height: "30px",
+    width: "280px",
+    padding: "0px",
+    caretColor: "#ffffff",
+
+    inputTextTheme: {
+        textColor: "#b9b9b9",
+        fontSize: "1.6em",
+        fontWeight: 800,
+        textAlign: "center",
+    },
+
+    placeholderTextTheme: {
+        textColor: '#484848',
+        fontSize: '1em',
+        textAlign: 'center'
+    }
 };
 
 export const sliderTheme = {
@@ -99,7 +124,7 @@ export const sliderTheme = {
 export const stopPauseButtonTheme = {
     width: "50%",
     height: "50px",
-    background: "#646875",
+    background: "#000000",
     disabledBackground: "#c4dbff",
     hoverBackground: "#727786",
     border: "none",
@@ -159,22 +184,22 @@ export const selectTheme = {
     borderRadius: 7,
     menuBorderRadius: 7,
     optionBorderRadius: 4,
-    boxShadow: "0 9px 15px 0 rgba(0, 0, 0, 0.12)",
+    boxShadow: "none",
     cursorOnHover: 'pointer'
 };
 
 export const shuffleButtonTheme = {
     width: "200px",
     height: "50px",
-    background: "#646875",
-    disabledBackground: "#c4dbff",
-    hoverBackground: "#4a4d57",
+    background: "#000000",
+    disabledBackground: "rgba(0,0,0,0.32)",
+    hoverBackground: "#2d2d2d",
     borderRadius: "10px",
     border: "none",
 
     text: {
         textColor: "#ffffff",
-        disabledTextColor: "rgba(255,255,255,1)",
+        disabledTextColor: "rgb(108,108,108)",
         textAlign: 'center',
         fontSize: '1.2em',
         fontWeight: 600
@@ -191,7 +216,7 @@ export const StyledSortButtonContent = styled.div`
 export const sortTextTheme = (disabled) => {
     return {
         textColor: !disabled ? "#ffffff" : "rgba(136,136,136,0.8)",
-        disabledTextColor: "rgba(255,255,255,1)",
+        disabledTextColor: "rgb(131,131,131)",
         textAlign: 'center',
         fontWeight: 800,
         fontSize: '1.2em'
@@ -206,6 +231,8 @@ export const sortButtonTheme = {
     hoverBackground: "#666cbd",
     borderRadius: "6px",
     border: "none",
+    margin: "20px 0px 0px 0px",
+
     text: {
         textColor: "#ffffff",
         disabledTextColor: "rgba(255,255,255,0.34)",
@@ -275,13 +302,15 @@ export const StyledChart = styled(motion.div)`
   justify-content: center;
   flex-direction: column;
   width: 50%;
-  padding: 0px;
+  padding-top: 120px;
+  padding-bottom: 120px;
   box-sizing: border-box;
   // prevents from growing with inner canvas:
   overflow: hidden;
 
   @media (max-width: 1024px) {
     width: 100%;
+    padding: 0;
   }
 `;
 
