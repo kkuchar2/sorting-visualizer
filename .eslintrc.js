@@ -1,8 +1,8 @@
-const possibleErrors = {};
-
-const bestPractices = {
-
+const possibleErrors = {
+    '@next/next/no-img-element': 'off'
 };
+
+const bestPractices = {};
 
 const strict = {};
 
@@ -14,20 +14,49 @@ const es6 = {};
 
 const react = {};
 
+const typescript = {};
+
 const stylistic = {
     'no-multiple-empty-lines': ['error', {max: 1, maxBOF: 0, maxEOF: 0}],
     'no-trailing-spaces': ['error', {skipBlankLines: false}],
     'comma-spacing': 'error',
     'comma-style': 'error',
-    "react/no-unescaped-entities": 0,
-    "react/prop-types": 0,
-    "no-var": 0,
-    semi: 'error',
+    'react/no-unescaped-entities': 0,
+    'react/prop-types': 0,
+    'react/jsx-curly-brace-presence': ['error', 'always'],
+    'no-var': 0,
+    'semi': 'error',
+    'quotes': [2, 'single', 'avoid-escape'],
     'keyword-spacing': ['error'],
-    'space-in-parens':['error', 'never'],
+    'space-in-parens': ['error', 'never'],
     'space-infix-ops': 'error',
     'space-unary-ops': 'error',
-    'wrap-regex': 'error'
+    'wrap-regex': 'error',
+    'import/order': [
+        'error',
+        {
+            alphabetize: {
+                order: 'asc',
+                caseInsensitive: true,
+            },
+            'newlines-between': 'always',
+            groups: ['builtin', 'external', 'parent', 'sibling', 'index'],
+            pathGroups: [
+                {
+                    pattern: 'react',
+                    group: 'external',
+                    position: 'before',
+                },
+            ],
+            pathGroupsExcludedImportTypes: ['builtin'],
+        },
+    ],
+    'no-unused-vars': 'off', // or "@typescript-eslint/no-unused-vars": "off",
+    'unused-imports/no-unused-imports': 'error',
+    'unused-imports/no-unused-vars': [
+        'warn',
+        {'vars': 'all', 'varsIgnorePattern': '^_', 'args': 'after-used', 'argsIgnorePattern': '^_'}
+    ],
 };
 
 const rules = Object.assign({},
@@ -38,11 +67,18 @@ const rules = Object.assign({},
     promises,
     es6,
     react,
+    typescript,
     stylistic);
 
 module.exports = {
     root: true,
-    parser: 'babel-eslint',
+    parser: '@typescript-eslint/parser',
+    plugins: [
+        '@typescript-eslint',
+        'eslint-plugin-node',
+        'eslint-plugin-import',
+        'unused-imports'
+    ],
     parserOptions: {
         ecmaFeatures: {
             ecmaVersion: es6,
@@ -56,14 +92,15 @@ module.exports = {
         es6: es6,
         node: false
     },
-    'extends': [
-        'plugin:react/recommended'
+    extends: [
+        'plugin:react/recommended',
+        'next/core-web-vitals'
     ],
-    rules,
+    rules: rules,
     overrides: [
         {
             files: [
-                'src/js/**'
+                'src/**'
             ]
         }
     ]
