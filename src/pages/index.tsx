@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useReducer, useState} from 'react';
+import React, {useCallback, useEffect, useReducer, useRef, useState} from 'react';
 
 import {Box, Slider, SliderFilledTrack, SliderThumb, SliderTrack, Text} from '@chakra-ui/react';
 
@@ -10,14 +10,21 @@ import {
     SLOWDOWN_FACTOR_MS,
     sortingAlgorithms
 } from '../config';
-import {createSAB, useEffectWithNonNull} from '../util/util';
 import {registerSortWorker, sendMessage, unregisterWorker} from '../workers/workers';
 
 import {BarsView} from 'components/BarsView/BarsView';
 import {CustomToolTip} from 'components/CustomTooltip/CustomTooltip';
 import TopBar from 'components/TopBar/TopBar';
+import {createSAB} from 'util/util';
 
 const { Select } = require('chakra-react-select');
+
+interface CalculationState {
+    controlData: Uint8Array,
+    data: Uint8Array,
+    sampleCount: number,
+    dirty: boolean,
+}
 
 const Index = () => {
 
@@ -29,44 +36,59 @@ const Index = () => {
      * controlData[1] = 0 - not aborted, 1 - aborted
      * controlData[2] = value - slowdown factor of notifications from worker
      */
-    const [calculationState, setCalculationState] = useState({
-        controlData: createSAB(3),
-        data: createSAB(DEFAULT_SAMPLE_COUNT),
-        sampleCount: DEFAULT_SAMPLE_COUNT
-    });
+    const calculationState = useRef<CalculationState>(null);
 
     const [sorted, setSorted] = useState(false);
     const [sorting, setSorting] = useState(false);
     const [paused, setPaused] = useState(false);
     const [selectedAlgorithm, setSelectedAlgorithm] = useState(sortingAlgorithms[0]);
 
-    const [worker, setWorker] = useState(null);
+    const worker = useRef(null);
     const [color] = useState('#b2b2b2');
-    const [colorDisabled] = useState('#2f2f2f');
-    const [dirty, setDirty] = useState(false);
 
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
     const messageHandlersMap = {
-        'sort': () => forceUpdate(),
-        'shuffle': () => onShuffleDataReceived(),
-        'sortFinished': payload => onSortFinished(payload.sorted),
+        'init': () => {
+            forceUpdate();
+        },
+        'sort': () => {
+            forceUpdate();
+        },
+        'shuffle': () => {
+            onShuffleDataReceived();
+        },
+        'sortFinished': payload => {
+            onSortFinished(payload.sorted);
+        },
     };
 
     useEffect(() => {
-        const onMessageReceived = e => messageHandlersMap[e.data.type](e.data.payload);
-        setWorker(registerSortWorker(onMessageReceived, calculationState.data, calculationState.controlData));
-        return () => unregisterWorker(worker);
-    }, []);
+        calculationState.current = {
+            controlData: createSAB(3),
+            data: createSAB(DEFAULT_SAMPLE_COUNT),
+            sampleCount: DEFAULT_SAMPLE_COUNT,
+            dirty: true,
+        };
 
-    useEffectWithNonNull(() => {
-        initializeData();
-        requestShuffleData();
-    }, [worker, calculationState]);
+        worker.current = registerSortWorker(e => messageHandlersMap[e.data.type](e.data.payload));
+
+        sendMessage(worker.current, 'initSharedData', {
+            buffer: calculationState.current.data,
+            controlData: calculationState.current.controlData,
+            maxValue: MAX_SAMPLE_VALUE
+        });
+
+        return () => {
+            if (worker.current) {
+                unregisterWorker(worker.current);
+            }
+        };
+    }, []);
 
     const onShuffleDataReceived = useCallback(() => {
         setSorted(false);
-        setDirty(true);
+        calculationState.current.dirty = true;
         forceUpdate();
     }, []);
 
@@ -76,96 +98,69 @@ const Index = () => {
     }, []);
 
     const onSortButtonPressed = useCallback(() => {
-        setDirty(false);
-        calculationState.controlData[0] = 0;
-        calculationState.controlData[1] = 0;
-        calculationState.controlData[2] = SLOWDOWN_FACTOR_MS;
+        calculationState.current.dirty = false;
+        calculationState.current.controlData[0] = 0;
+        calculationState.current.controlData[1] = 0;
+        calculationState.current.controlData[2] = SLOWDOWN_FACTOR_MS;
         setPaused(false);
         setSorting(true);
-        sendMessage(worker, 'sort', { algorithm: selectedAlgorithm.value });
-    }, [worker, sorting, sorted, selectedAlgorithm, paused]);
+        sendMessage(worker.current, 'sort', { algorithm: selectedAlgorithm.value });
+    }, [sorting, sorted, selectedAlgorithm, paused]);
 
     const onStopButtonPressed = useCallback(() => {
-        calculationState.controlData[1] = 1;
+        calculationState.current.controlData[1] = 1;
         setPaused(false);
         setSorting(false);
-    }, [worker]);
+    }, [calculationState]);
 
     const onPauseButtonPressed = useCallback(() => {
         setPaused(true);
-        calculationState.controlData[0] = 1;
-    }, [calculationState.controlData]);
+        calculationState.current.controlData[0] = 1;
+    }, [calculationState]);
 
     const onResumeButtonPressed = useCallback(() => {
         setPaused(false);
-        calculationState.controlData[0] = 0;
-    }, []);
+        calculationState.current.controlData[0] = 0;
+    }, [calculationState]);
 
     const requestShuffleData = useCallback(() => {
         setSorting(false);
-        sendMessage(worker, 'shuffle', { maxValue: MAX_SAMPLE_VALUE });
+        sendMessage(worker.current, 'shuffle', { maxValue: MAX_SAMPLE_VALUE });
     }, [worker]);
 
-    const initializeData = useCallback(() => {
-        sendMessage(worker, 'initSharedData', {
-            buffer: calculationState.data,
-            controlData: calculationState.controlData,
-        });
-    }, [calculationState, worker]);
-
     const updateSampleCount = useCallback(newSampleCount => {
-        if (!worker) {
-        }
-
-        if (!isSampleCountValid(newSampleCount)) {
-            setCalculationState({
-                controlData: calculationState.controlData,
-                data: calculationState.data,
-                sampleCount: Math.min(MAX_SAMPLE_COUNT, newSampleCount)
-            });
-            return;
-        }
-
         const newData = createSAB(newSampleCount);
 
-        sendMessage(worker, 'initSharedData', {
+        sendMessage(worker.current, 'initSharedData', {
             buffer: newData,
-            controlData: calculationState.controlData,
+            controlData: calculationState.current.controlData,
         });
 
-        sendMessage(worker, 'shuffle', { maxValue: MAX_SAMPLE_VALUE });
+        sendMessage(worker.current, 'shuffle', { maxValue: MAX_SAMPLE_VALUE });
 
-        setCalculationState({
-            controlData: calculationState.controlData,
+        calculationState.current = {
+            controlData: calculationState.current.controlData,
             data: newData,
-            sampleCount: newSampleCount
-        });
-    }, [calculationState, worker]);
+            sampleCount: newSampleCount,
+            dirty: true
+        };
 
-    const isSampleCountValid = useCallback((v) => {
-        return v >= MIN_SAMPLE_COUNT && v <= MAX_SAMPLE_COUNT;
-    }, []);
+    }, [worker, calculationState]);
 
-    const operationsDisabled = !isSampleCountValid(calculationState.sampleCount);
-
-    let sliderValue;
-
-    if (isNaN(calculationState.sampleCount)) {
-        sliderValue = 0;
-    }
-    else {
-        sliderValue = Math.max(calculationState.data.length, calculationState.sampleCount);
+    if (!calculationState.current)
+    {
+        return <></>;
     }
 
     return <Box display={'flex'} justifyContent={'center'} padding={'20px'} height={'100%'}>
-        <TopBar sorting={sorting} paused={paused} sorted={sorted} operationsDisabled={operationsDisabled}
+        <TopBar sorting={sorting} paused={paused} sorted={sorted} operationsDisabled={false}
                 requestShuffleData={requestShuffleData} onSortButtonPressed={onSortButtonPressed}
                 onPauseButtonPressed={onPauseButtonPressed} onResumeButtonPressed={onResumeButtonPressed}
                 onStopButtonPressed={onStopButtonPressed}/>
         <Box display={'flex'} flexDirection={'column'} marginTop={'100px'} gap={'40px'}
              width={{ base: '100%', md: 'auto' }}>
 
-            <Text fontSize={'22px'} fontWeight={'semibold'} alignSelf={'center'}>{`Samples: ${sliderValue}`}</Text>
+            <Text fontSize={'22px'} fontWeight={'semibold'} alignSelf={'center'}>{`Samples: ${calculationState.current.sampleCount}`}</Text>
 
             <Box width={{ base: '100%', sm: '300px' }} alignSelf={'center'}>
                 <Slider isDisabled={sorting} aria-label={'slider-ex-1'} defaultValue={100} min={MIN_SAMPLE_COUNT}
@@ -197,12 +192,12 @@ const Index = () => {
                 border={`2px solid ${'#383838'}`}
                 width={{ base: '100%', md: '800px', lg: '1000px', xl: '1000px' }}>
                 <BarsView
-                    samples={Math.max(calculationState.data.length, calculationState.sampleCount)}
+                    samples={calculationState.current.sampleCount}
                     maxValue={MAX_SAMPLE_VALUE}
-                    data={Array.from(calculationState.data)}
-                    color={isSampleCountValid(calculationState.sampleCount) ? color : colorDisabled}
+                    data={Array.from(calculationState.current.data)}
+                    color={color}
                     algorithm={selectedAlgorithm}
-                    dirty={dirty}/>
+                    dirty={calculationState.current.dirty}/>
             </Box>
         </Box>
     </Box>;

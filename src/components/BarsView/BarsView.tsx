@@ -3,15 +3,12 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {StyledBarsView} from './style';
 
 import {
-    calculateBarsSizes,
     createBars,
     createOrthoCamera,
     createRenderer,
     createScene,
-    dummyObj,
     enableTransparency,
-    removeChildrenFromScene,
-    updateInstancedBar,
+    removeChildrenFromScene, updateBars,
     updateInstancedMeshColor
 } from 'util/GLUtil';
 import {getParentHeight, getParentWidth, useEffectOnTrue, useEffectWithNonNull} from 'util/util';
@@ -67,54 +64,31 @@ export const BarsView = (props) => {
         }
     }, [scene, data, color]);
 
-    useEffectOnTrue(initialized, () => {
+    useEffect(() => {
+        if (!initialized) {
+            return;
+        }
 
-        const updateCamera = () => {
+        if (data.length > 0) {
             camera.left = 0;
             camera.right = width;
             camera.top = height;
             camera.bottom = 0;
             camera.updateProjectionMatrix();
-        };
 
-        const updateBars = () => {
-            if (scene.children.length === 0) {
-                return;
-            }
-
-            const mesh = scene.children[0];
-
-            const { barWidth, spacing, offsetX } = calculateBarsSizes(width, data.length);
-
-            for (let x = 0; x < samples; x++) {
-                updateInstancedBar(x, mesh, data[x], maxValue, height, barWidth, spacing, offsetX, color);
-                // mesh.setColorAt(x, colorOfHash(barMarkColors[marks[x]]));
-                mesh.setMatrixAt(x, dummyObj.matrix);
-            }
-
-            mesh.instanceMatrix.needsUpdate = true;
-            mesh.instanceColor.needsUpdate = true;
-        };
-
-        const createOrUpdateBars = () => {
-
-            if (data.length === 0) {
-                return;
-            }
+            renderer.dispose();
+            renderer.setSize(width, height);
 
             if (dirty) {
-                renderer.dispose();
                 createBars(scene, width, height, data, maxValue, samples, color);
             }
             else {
-                updateBars();
+                updateBars(scene, width, height, data, maxValue, samples, color);
             }
-        };
 
-        updateCamera();
-        createOrUpdateBars();
-        renderer.setSize(width, height);
-        renderer.render(scene, camera);
+            renderer.render(scene, camera);
+        }
+
     }, [algorithm, dirty, data, width, height, color]);
 
     return <StyledBarsView ref={mount}/>;

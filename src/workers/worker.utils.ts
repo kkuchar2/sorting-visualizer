@@ -42,6 +42,8 @@ export const notify = (type, payload, skipMessagesByTime = false, slowDownFactor
 
 export const notifySortDataShuffled = () => notify('shuffle', [], false, false);
 
+export const notifySortDataInitComplete = () => notify('init', [], false, false);
+
 export const notifySortUpdate = (forceSend = false) => {
     notify('sort', { marks: sortState.marks }, !forceSend, true, 16);
 };
@@ -67,10 +69,13 @@ export const onSortMethodExit = () => postMessage({ type: 'sortFinished', payloa
 
 export const getSortMethod = (algorithm) => sortAlgorithmMap[algorithm];
 
-export const initSharedData = async (buffer, controlBuffer, marksBuffer) => {
+export const initSharedData = async (buffer, controlBuffer, maxValue) => {
     sortState.data = buffer;
+    for (let i = 0; i < sortState.data.length; i++) {
+        sortState.data[i] = getRandomUInt8(1, maxValue);
+    }
     sortState.controlData = controlBuffer;
-    sortState.marks = marksBuffer;
+    sortState.marks = [];
 };
 
 export const shuffle = async (maxValue) => {

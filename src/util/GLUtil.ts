@@ -237,3 +237,22 @@ export const createBars = (scene, width, height, data, maxValue, samples, color)
     mesh.instanceMatrix.needsUpdate = true;
     scene.add(mesh);
 };
+
+export const updateBars = (scene, width, height, data, maxValue, samples, color) => {
+    if (scene.children.length === 0) {
+        return;
+    }
+
+    const mesh = scene.children[0];
+
+    const { barWidth, spacing, offsetX } = calculateBarsSizes(width, data.length);
+
+    for (let x = 0; x < samples; x++) {
+        updateInstancedBar(x, mesh, data[x], maxValue, height, barWidth, spacing, offsetX, color);
+        // mesh.setColorAt(x, colorOfHash(barMarkColors[marks[x]]));
+        mesh.setMatrixAt(x, dummyObj.matrix);
+    }
+
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.instanceColor.needsUpdate = true;
+};

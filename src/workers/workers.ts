@@ -21,11 +21,4 @@ export const sendMessage = (worker, messageType, payload = {}) => {
     worker.postMessage({ type: messageType, payload: payload });
 };
 
-export const registerSortWorker = (handler, sharedBuffer, controlSharedBuffer) => {
-    const worker = registerWorker(new Worker(new URL('sort.worker.ts', import.meta.url)), handler);
-    sendMessage(worker, 'initSharedData', {
-        buffer: sharedBuffer,
-        controlData: controlSharedBuffer,
-    });
-    return worker;
-};
+export const registerSortWorker = (handler) => registerWorker(new Worker(new URL('sort.worker.ts', import.meta.url)), handler);
