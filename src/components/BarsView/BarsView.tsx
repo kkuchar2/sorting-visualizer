@@ -11,7 +11,7 @@ import {
     removeChildrenFromScene, updateBars,
     updateInstancedMeshColor
 } from 'util/GLUtil';
-import {getParentHeight, getParentWidth, useEffectOnTrue, useEffectWithNonNull} from 'util/util';
+import {getParentHeight, getParentWidth, useEffectWithNonNull} from 'util/util';
 
 export const BarsView = (props) => {
     const { samples, maxValue, data, color, algorithm, dirty } = props;
@@ -46,7 +46,10 @@ export const BarsView = (props) => {
         return () => window.removeEventListener('resize', updateSize);
     }, []);
 
-    useEffectOnTrue(initialized, () => {
+    useEffect(() => {
+        if (!initialized) {
+            return;
+        }
         enableTransparency(renderer);
         mount.current.appendChild(renderer.domElement);
 
