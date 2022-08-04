@@ -24,6 +24,7 @@ interface CalculationState {
     data: Uint8Array,
     sampleCount: number,
     dirty: boolean,
+    locked: boolean
 }
 
 const Index = () => {
@@ -50,6 +51,7 @@ const Index = () => {
 
     const messageHandlersMap = {
         'init': () => {
+            calculationState.current.locked = false;
             forceUpdate();
         },
         'sort': () => {
@@ -69,6 +71,7 @@ const Index = () => {
             data: createSAB(DEFAULT_SAMPLE_COUNT),
             sampleCount: DEFAULT_SAMPLE_COUNT,
             dirty: true,
+            locked: false
         };
 
         worker.current = registerSortWorker(e => messageHandlersMap[e.data.type](e.data.payload));
@@ -129,21 +132,25 @@ const Index = () => {
     }, [worker]);
 
     const updateSampleCount = useCallback(newSampleCount => {
+        if (calculationState.current.locked) {
+            return;
+        }
+
         const newData = createSAB(newSampleCount);
-
-        sendMessage(worker.current, 'initSharedData', {
-            buffer: newData,
-            controlData: calculationState.current.controlData,
-        });
-
-        sendMessage(worker.current, 'shuffle', { maxValue: MAX_SAMPLE_VALUE });
 
         calculationState.current = {
             controlData: calculationState.current.controlData,
             data: newData,
             sampleCount: newSampleCount,
-            dirty: true
+            dirty: true,
+            locked: true
         };
+
+        sendMessage(worker.current, 'initSharedData', {
+            buffer: newData,
+            controlData: calculationState.current.controlData,
+            maxValue: MAX_SAMPLE_VALUE
+        });
 
     }, [worker, calculationState]);
 
