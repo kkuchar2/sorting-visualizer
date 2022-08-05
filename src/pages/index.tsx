@@ -156,12 +156,12 @@ const Index = () => {
                 requestShuffleData={requestShuffleData} onSortButtonPressed={onSortButtonPressed}
                 onPauseButtonPressed={onPauseButtonPressed} onResumeButtonPressed={onResumeButtonPressed}
                 onStopButtonPressed={onStopButtonPressed}/>
-        <Box display={'flex'} flexDirection={'column'} marginTop={'100px'} gap={'40px'}
+        <Box display={'flex'} flexDirection={'column'} marginTop={'100px'} gap={'30px'}
              width={{ base: '100%', md: 'auto' }}>
 
-            <Text fontSize={'22px'}
-                  fontWeight={'semibold'}
-                  alignSelf={{ base: 'center', md: 'flex-start' }}>
+            <Text fontSize={{base: '17px', sm: '22px'}}
+                  fontWeight={'medium'}
+                  alignSelf={'flex-start' }>
                 {`Samples: ${calculationState.current.sampleCount}`}
             </Text>
 
