@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useReducer, useRef, useState} from 'react';
 
 import {Box, Slider, SliderFilledTrack, SliderThumb, SliderTrack, Text} from '@chakra-ui/react';
+import {useThrottleCallback} from '@react-hook/throttle';
 
 import {
     DEFAULT_SAMPLE_COUNT,
@@ -20,15 +21,6 @@ import {createSAB} from 'util/util';
 const { Select } = require('chakra-react-select');
 
 interface CalculationState {
-    controlData: Uint8Array,
-    data: Uint8Array,
-    sampleCount: number,
-    dirty: boolean,
-    locked: boolean
-}
-
-const Index = () => {
-
     /**
      * Control data is also SharedArrayBuffer
      * to avoid delays in communication between worker and component
@@ -37,6 +29,14 @@ const Index = () => {
      * controlData[1] = 0 - not aborted, 1 - aborted
      * controlData[2] = value - slowdown factor of notifications from worker
      */
+    controlData: Uint8Array,
+    data: Uint8Array,
+    sampleCount: number,
+    dirty: boolean,
+    locked: boolean
+}
+
+const Index = () => {
     const calculationState = useRef<CalculationState>(null);
 
     const [sorted, setSorted] = useState(false);
@@ -45,25 +45,8 @@ const Index = () => {
     const [selectedAlgorithm, setSelectedAlgorithm] = useState(sortingAlgorithms[0]);
 
     const worker = useRef(null);
-    const [color] = useState('#b2b2b2');
 
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
-
-    const messageHandlersMap = {
-        'init': () => {
-            calculationState.current.locked = false;
-            forceUpdate();
-        },
-        'sort': () => {
-            forceUpdate();
-        },
-        'shuffle': () => {
-            onShuffleDataReceived();
-        },
-        'sortFinished': payload => {
-            onSortFinished(payload.sorted);
-        },
-    };
 
     useEffect(() => {
         calculationState.current = {
@@ -74,7 +57,26 @@ const Index = () => {
             locked: false
         };
 
-        worker.current = registerSortWorker(e => messageHandlersMap[e.data.type](e.data.payload));
+        worker.current = registerSortWorker(e => {
+            switch (e.data.type) {
+                case 'init':
+                    calculationState.current.locked = false;
+                    forceUpdate();
+                    break;
+                case 'sort':
+                    forceUpdate();
+                    break;
+                case 'shuffle':
+                    setSorted(false);
+                    calculationState.current.dirty = true;
+                    forceUpdate();
+                    break;
+                case 'sortFinished':
+                    setSorting(false);
+                    setSorted(e.data.payload.sorted);
+                    break;
+            }
+        });
 
         sendMessage(worker.current, 'initSharedData', {
             buffer: calculationState.current.data,
@@ -89,17 +91,6 @@ const Index = () => {
         };
     }, []);
 
-    const onShuffleDataReceived = useCallback(() => {
-        setSorted(false);
-        calculationState.current.dirty = true;
-        forceUpdate();
-    }, []);
-
-    const onSortFinished = useCallback(isSorted => {
-        setSorting(false);
-        setSorted(isSorted);
-    }, []);
-
     const onSortButtonPressed = useCallback(() => {
         calculationState.current.dirty = false;
         calculationState.current.controlData[0] = 0;
@@ -108,7 +99,7 @@ const Index = () => {
         setPaused(false);
         setSorting(true);
         sendMessage(worker.current, 'sort', { algorithm: selectedAlgorithm.value });
-    }, [sorting, sorted, selectedAlgorithm, paused]);
+    }, [selectedAlgorithm]);
 
     const onStopButtonPressed = useCallback(() => {
         calculationState.current.controlData[1] = 1;
@@ -131,7 +122,7 @@ const Index = () => {
         sendMessage(worker.current, 'shuffle', { maxValue: MAX_SAMPLE_VALUE });
     }, [worker]);
 
-    const updateSampleCount = useCallback(newSampleCount => {
+    const updateSampleCount = useThrottleCallback(newSampleCount => {
         if (calculationState.current.locked) {
             return;
         }
@@ -152,10 +143,9 @@ const Index = () => {
             maxValue: MAX_SAMPLE_VALUE
         });
 
-    }, [worker, calculationState]);
+    }, 60);
 
-    if (!calculationState.current)
-    {
+    if (!calculationState.current) {
         return <></>;
     }
 
@@ -167,9 +157,14 @@ const Index = () => {
         <Box display={'flex'} flexDirection={'column'} marginTop={'100px'} gap={'40px'}
              width={{ base: '100%', md: 'auto' }}>
 
-            <Text fontSize={'22px'} fontWeight={'semibold'} alignSelf={'center'}>{`Samples: ${calculationState.current.sampleCount}`}</Text>
+            <Text fontSize={'22px'}
+                  fontWeight={'semibold'}
+                  alignSelf={{ base: 'center', md: 'flex-start' }}>
+                {`Samples: ${calculationState.current.sampleCount}`}
+            </Text>
 
-            <Box width={{ base: '100%', sm: '300px' }} alignSelf={'center'}>
+            <Box width={'100%'}
+                 alignSelf={{ base: 'center', sm: 'flex-start' }}>
                 <Slider isDisabled={sorting} aria-label={'slider-ex-1'} defaultValue={100} min={MIN_SAMPLE_COUNT}
                         max={MAX_SAMPLE_COUNT} step={10}
                         onChange={updateSampleCount}>
@@ -184,8 +179,12 @@ const Index = () => {
             <Box width={{ base: '100%', sm: '300px' }}>
                 <Select value={selectedAlgorithm}
                         bg={'#3e3e3e'}
+                        focusBorderColor={'white.500'}
+                        isSearchable={false}
+                        selectedOptionColor={'green'}
                         onChange={setSelectedAlgorithm}
                         alignSelf={'flex-start'}
+                        useBasicStyles={true}
                         options={sortingAlgorithms}
                         isDisabled={sorting}>
                 </Select>
@@ -196,13 +195,12 @@ const Index = () => {
             <Box
                 height={{ base: '200px', md: '600px' }}
                 boxSizing={'border-box'}
-                border={`2px solid ${'#383838'}`}
+                border={'2px solid #383838'}
                 width={{ base: '100%', md: '800px', lg: '1000px', xl: '1000px' }}>
                 <BarsView
                     samples={calculationState.current.sampleCount}
                     maxValue={MAX_SAMPLE_VALUE}
                     data={Array.from(calculationState.current.data)}
-                    color={color}
                     algorithm={selectedAlgorithm}
                     dirty={calculationState.current.dirty}/>
             </Box>

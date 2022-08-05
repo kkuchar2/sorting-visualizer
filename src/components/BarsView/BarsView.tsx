@@ -1,25 +1,29 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState} from 'react';
 
 import {StyledBarsView} from './style';
 
 import {
+    calculateBarOffset,
+    calculateBarsSizes,
     createBars,
     createOrthoCamera,
     createRenderer,
     createScene,
     enableTransparency,
-    removeChildrenFromScene, updateBars,
-    updateInstancedMeshColor
+    removeChildrenFromScene, updateBars, updateCamera
 } from 'util/GLUtil';
-import {getParentHeight, getParentWidth, useEffectWithNonNull} from 'util/util';
+import {getParentHeight, getParentWidth} from 'util/util';
 
 export const BarsView = (props) => {
-    const { samples, maxValue, data, color, algorithm, dirty } = props;
+    const { samples, maxValue, data, dirty } = props;
 
     const mount = useRef(null);
 
     const [renderer, setRenderer] = useState(null);
     const [scene, setScene] = useState(null);
+    const [spacing, setSpacing] = useState(1);
+    const [barWidth, setBarWidth] = useState(1);
+    const [offsetX, setOffsetX] = useState(0);
     const [camera, setCamera] = useState(null);
     const [initialized, setInitialized] = useState(false);
     const [width, setWidth] = useState(0);
@@ -54,45 +58,43 @@ export const BarsView = (props) => {
         mount.current.appendChild(renderer.domElement);
 
         return () => {
-            removeChildrenFromScene(scene);
             mount.current.removeChild(renderer.domElement);
+            removeChildrenFromScene(scene);
         };
     }, [initialized]);
 
-    useEffectWithNonNull(() => updateBarsColor(), [data, color, scene]);
-
-    const updateBarsColor = useCallback(() => {
-        if (scene.children.length > 0) {
-            updateInstancedMeshColor(scene.children[0], data.length, color);
-        }
-    }, [scene, data, color]);
+    useEffect(() => {
+        const res = calculateBarsSizes(width, samples);
+        setSpacing(res.spacing);
+        setBarWidth(res.barWidth);
+    }, [width, samples]);
 
     useEffect(() => {
-        if (!initialized) {
+        setOffsetX(calculateBarOffset(width, samples, barWidth, spacing));
+    }, [width, samples, spacing, barWidth]);
+
+    useEffect(() => {
+        if (!initialized || barWidth === 0) {
             return;
         }
 
         if (data.length > 0) {
-            camera.left = 0;
-            camera.right = width;
-            camera.top = height;
-            camera.bottom = 0;
-            camera.updateProjectionMatrix();
+            updateCamera(camera, 0, width, height, 0);
 
             renderer.dispose();
             renderer.setSize(width, height);
 
             if (dirty) {
-                createBars(scene, width, height, data, maxValue, samples, color);
+                createBars(scene, barWidth, spacing, offsetX, width, height, data, maxValue, samples);
             }
             else {
-                updateBars(scene, width, height, data, maxValue, samples, color);
+                updateBars(scene, barWidth, spacing, offsetX, width, height, data, maxValue, samples);
             }
 
             renderer.render(scene, camera);
         }
 
-    }, [algorithm, dirty, data, width, height, color]);
+    }, [dirty, data, width, height, spacing, barWidth, offsetX]);
 
     return <StyledBarsView ref={mount}/>;
 };

@@ -33,6 +33,7 @@
     "@emotion/react": "^11.10.0",
     "@emotion/styled": "^11.10.0",
     "@heroicons/react": "^1.0.6",
+    "@react-hook/throttle": "^2.2.0",
     "@types/node": "18.6.3",
     "@types/react": "^18.0.15",
     "@types/react-dom": "18.0.6",
@@ -66,5 +67,5 @@
     "three": "^0.143.0",
     "typescript": "4.7.4"
   },
-  "buildHash": "62b7af44606f3212082c8a25036fbcb94a3c8f8c"
+  "buildHash": "86c793382ea91d5e0a44b9063395090cbff5f5ec"
 }

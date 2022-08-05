@@ -3,7 +3,6 @@ import {
     DynamicDrawUsage,
     InstancedBufferGeometry,
     InstancedMesh,
-    Mesh,
     MeshBasicMaterial,
     Object3D,
     OrthographicCamera,
@@ -79,99 +78,6 @@ export const createPlaneGeometry = (width, height) => new PlaneGeometry(width, h
 
 export const createScene = () => new Scene();
 
-export const createCells = (scene, defaultMaterial, startMaterial, endMaterial, cellSize, cols, rows, startIdx, endIdx) => {
-    const size = cols * rows;
-
-    if (size === 0) {
-        return null;
-    }
-
-    // @ts-ignore
-    let geometry = new createPlaneGeometry(cellSize, cellSize);
-
-    for (let i = 0; i < size; i++) {
-
-        let material = defaultMaterial.clone();
-
-        if (startIdx === i) {
-            material = startMaterial.clone();
-        }
-        else if (endIdx === i) {
-            material = endMaterial.clone();
-        }
-
-        const cell = new Mesh(geometry, material.clone());
-        const x = Math.round(i % cols);
-        const y = Math.round(Math.floor(i / cols));
-
-        cell.layers.enable(1);
-        cell.name = 'Cell_' + x + '_' + y;
-        cell.scale.y = 1;
-        cell.position.z = -3;
-        cell.position.x = cellSize / 2 + cellSize * x;
-        cell.position.y = cellSize / 2 + cellSize * y;
-        cell.userData = {
-            id: i,
-            selected: false,
-            isStart: startIdx === i,
-            isEnd: endIdx === i,
-            x: x,
-            y: y
-        };
-
-        scene.add(cell);
-    }
-
-    return geometry;
-};
-
-export const createLines = (scene, material, cellSize, cols, rows, width, height) => {
-    const thickness = 2;
-
-    // @ts-ignore
-    const geometry = new createPlaneGeometry(thickness, height);
-
-    // @ts-ignore
-    const geometry2 = new createPlaneGeometry(width, thickness);
-
-    let count = 0;
-
-    for (let i = 0; i < cols + 1; i++) {
-        const line = new Mesh(geometry, material.clone());
-        line.position.z = -1;
-
-        if (i === 0) {
-            line.position.x = i * cellSize + thickness / 2;
-        }
-        else {
-            line.position.x = i === cols ? i * cellSize - thickness / 2 : i * cellSize;
-        }
-
-        line.position.y = height / 2;
-        line.layers.enable(2);
-        scene.add(line);
-        count++;
-    }
-
-    for (let i = 0; i < rows + 1; i++) {
-        const line = new Mesh(geometry2, material);
-        line.position.z = -1;
-        line.position.x = width / 2;
-
-        if (i === 0) {
-            line.position.y = i * cellSize + thickness / 2;
-        }
-        else {
-            line.position.y = i === rows ? i * cellSize - thickness / 2 : i * cellSize;
-        }
-        line.layers.enable(2);
-        scene.add(line);
-        count++;
-    }
-
-    return count;
-};
-
 export const calculateBarsSizes = (width, barsCount) => {
     let maxBarWidth = width / barsCount;
     let spacing = 0;
@@ -204,32 +110,32 @@ export const calculateBarsSizes = (width, barsCount) => {
         spacing = 0;
     }
 
-    const offsetX = Math.floor((width - barsCount * (barWidth + spacing)) / 2);
-
-    return { barWidth, spacing, offsetX };
+    return { barWidth, spacing  };
 };
 
-export const updateInstancedBar = (idx, mesh, value, maxValue, height, barWidth, spacing, offsetX, color) => {
+export const calculateBarOffset = (width: number, barsCount: number, barWidth: number, spacing: number) => {
+    return Math.floor((width - barsCount * (barWidth + spacing)) / 2);
+};
+
+export const updateInstancedBar = (idx, mesh, value, maxValue, height, barWidth, spacing, offsetX) => {
     const scale = (value / maxValue) * height;
     dummyObj.scale.set(barWidth, scale, 1);
     dummyObj.position.set(barWidth / 2 + barWidth * idx + spacing * idx + offsetX, scale / 2, 0);
     dummyObj.updateMatrix();
-    mesh.setColorAt(idx, colorOfHash(color));
 };
 
-export const createBars = (scene, width, height, data, maxValue, samples, color) => {
+export const createBars = (scene: Scene, barWidth: number, barSpacing: number, offsetX: number, width: number, height: number, data: Array<number>, maxValue: number, samples: number) => {
     removeChildrenFromScene(scene);
 
     const geom = new InstancedBufferGeometry().copy(new PlaneBufferGeometry(1, 1));
     const mesh = new InstancedMesh(geom, new MeshBasicMaterial({
         color: 0xffffff,
-        opacity: 1,
-        transparent: false
+        opacity: 0.5,
+        transparent: true
     }), samples);
-    const { barWidth, spacing, offsetX } = calculateBarsSizes(width, data.length);
 
     for (let x = 0; x < data.length; x++) {
-        updateInstancedBar(x, mesh, data[x], maxValue, height, barWidth, spacing, offsetX, color);
+        updateInstancedBar(x, mesh, data[x], maxValue, height, barWidth, barSpacing, offsetX);
         mesh.setMatrixAt(x, dummyObj.matrix);
     }
 
@@ -238,21 +144,13 @@ export const createBars = (scene, width, height, data, maxValue, samples, color)
     scene.add(mesh);
 };
 
-export const updateBars = (scene, width, height, data, maxValue, samples, color) => {
-    if (scene.children.length === 0) {
-        return;
-    }
-
-    const mesh = scene.children[0];
-
-    const { barWidth, spacing, offsetX } = calculateBarsSizes(width, data.length);
+export const updateBars = (scene: Scene, barWidth: number, barSpacing: number, offsetX: number, width: number, height: number, data: Array<number>, maxValue: number, samples: number) => {
+    const mesh = scene.children[0] as InstancedMesh;
 
     for (let x = 0; x < samples; x++) {
-        updateInstancedBar(x, mesh, data[x], maxValue, height, barWidth, spacing, offsetX, color);
-        // mesh.setColorAt(x, colorOfHash(barMarkColors[marks[x]]));
+        updateInstancedBar(x, mesh, data[x], maxValue, height, barWidth, barSpacing, offsetX);
         mesh.setMatrixAt(x, dummyObj.matrix);
     }
 
     mesh.instanceMatrix.needsUpdate = true;
-    mesh.instanceColor.needsUpdate = true;
 };
