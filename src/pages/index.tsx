@@ -123,6 +123,8 @@ const Index = () => {
     }, [worker]);
 
     const updateSampleCount = useThrottleCallback(newSampleCount => {
+        setSorted(false);
+
         if (calculationState.current.locked) {
             return;
         }
