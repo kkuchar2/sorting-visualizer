@@ -1,0 +1,184 @@
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+
+import { useThrottleCallback } from '@react-hook/throttle';
+import { OrthographicCamera } from '@react-three/drei';
+import { Canvas } from '@react-three/fiber';
+
+import { AlgorithmSelector } from '@/components/AlgorithmSelector/AlgorithmSelector';
+import { CalculationState } from '@/components/common.types';
+import { ControlButtons } from '@/components/ControlButtons/ControlButtons';
+import styles from '@/components/Pages/IndexPage/IndexPage.module.scss';
+import { DEFAULT_SAMPLE_COUNT, MAX_SAMPLE_VALUE, SLOWDOWN_FACTOR_MS, SortAlgorithm, sortingAlgorithms } from '@/config';
+import { Bar } from '@/three/canvas/Examples';
+import { createSAB } from '@/util/util';
+import { registerSortWorker, sendMessage, unregisterWorker } from '@/workers/workers';
+
+interface VisualiserProps {
+    algorithm: SortAlgorithm;
+    onSelectedAlgorithmChanged: (algorithm: SortAlgorithm) => void;
+    onShowSelectAlgorithmModal?: () => void;
+}
+
+export const Visualiser = (props: VisualiserProps) => {
+
+    const { algorithm, onSelectedAlgorithmChanged, onShowSelectAlgorithmModal } = props;
+
+    const calculationState = useRef<CalculationState>({
+        controlData: createSAB(3),
+        data: createSAB(DEFAULT_SAMPLE_COUNT),
+        sampleCount: DEFAULT_SAMPLE_COUNT,
+        dirty: true,
+        locked: false
+    });
+
+    const [sorted, setSorted] = useState(false);
+    const [sorting, setSorting] = useState(false);
+    const [paused, setPaused] = useState(false);
+
+    const worker = useRef(null);
+
+    const [, forceUpdate] = useReducer((x) => x + 1, 0);
+
+    useEffect(() => {
+        worker.current = registerSortWorker(e => {
+            switch (e.data.type) {
+                case 'init':
+                    calculationState.current.locked = false;
+                    forceUpdate();
+                    break;
+                case 'sort':
+                    forceUpdate();
+                    break;
+                case 'shuffle':
+                    setSorted(false);
+                    calculationState.current.dirty = true;
+                    forceUpdate();
+                    break;
+                case 'sortFinished':
+                    setSorting(false);
+                    setSorted(e.data.payload.sorted);
+                    break;
+            }
+        });
+
+        sendMessage(worker.current, 'initSharedData', {
+            buffer: calculationState.current.data,
+            controlData: calculationState.current.controlData,
+            maxValue: MAX_SAMPLE_VALUE
+        });
+
+        return () => {
+            if (worker.current) {
+                unregisterWorker(worker.current);
+            }
+        };
+    }, []);
+
+    const onSortButtonPressed = useCallback(() => {
+        calculationState.current.dirty = false;
+        calculationState.current.controlData[0] = 0;
+        calculationState.current.controlData[1] = 0;
+        calculationState.current.controlData[2] = SLOWDOWN_FACTOR_MS;
+        setPaused(false);
+        setSorting(true);
+        sendMessage(worker.current, 'sort', { algorithm: algorithm.value });
+    }, [algorithm]);
+
+    const onStopButtonPressed = useCallback(() => {
+        calculationState.current.controlData[1] = 1;
+        setPaused(false);
+        setSorting(false);
+    }, [calculationState]);
+
+    const onPauseButtonPressed = useCallback(() => {
+        setPaused(true);
+        calculationState.current.controlData[0] = 1;
+    }, [calculationState]);
+
+    const onResumeButtonPressed = useCallback(() => {
+        setPaused(false);
+        calculationState.current.controlData[0] = 0;
+    }, [calculationState]);
+
+    const requestShuffleData = useCallback(() => {
+        setSorting(false);
+        sendMessage(worker.current, 'shuffle', { maxValue: MAX_SAMPLE_VALUE });
+    }, [worker]);
+
+    const updateSampleCount = useThrottleCallback(newSampleCount => {
+        setSorted(false);
+
+        if (calculationState.current.locked) {
+            return;
+        }
+
+        const newData = createSAB(newSampleCount);
+
+        calculationState.current = {
+            controlData: calculationState.current.controlData,
+            data: newData,
+            sampleCount: newSampleCount,
+            dirty: true,
+            locked: true
+        };
+
+        sendMessage(worker.current, 'initSharedData', {
+            buffer: newData,
+            controlData: calculationState.current.controlData,
+            maxValue: MAX_SAMPLE_VALUE
+        });
+
+    }, 60);
+
+    return <div className={'flex h-full w-full flex-col gap-[30px]'}>
+        <div className={'grid w-full place-items-center'}>
+            <ControlButtons
+                sorted={sorted}
+                sorting={sorting}
+                paused={paused}
+                requestShuffleData={requestShuffleData}
+                onPauseButtonPressed={onPauseButtonPressed}
+                onResumeButtonPressed={onResumeButtonPressed}
+                onStopButtonPressed={onStopButtonPressed}
+                onSortButtonPressed={onSortButtonPressed}
+            />
+        </div>
+
+        <div className={'w-full'}>
+            <div className={'flex w-full items-center justify-center p-3'}>
+                <div className={styles.labelTitle}>
+                    {'Samples'}
+                </div>
+                <div className={styles.label}>
+                    {calculationState.current.sampleCount}
+                </div>
+            </div>
+            <input id={'samples-range'}
+                data-content={calculationState.current.sampleCount}
+                className={styles.slider} type={'range'} min={10} max={10000}
+                value={calculationState.current.sampleCount}
+                onChange={e => updateSampleCount(parseInt(e.target.value))}/>
+        </div>
+
+        <div className={'grid w-full place-items-center'}>
+            <div className={'flex max-w-[600px] flex-wrap justify-center gap-3'}>
+                <AlgorithmSelector
+                    algorithms={sortingAlgorithms}
+                    currentAlgorithm={algorithm}
+                    onSelectedAlgorithmSelected={onSelectedAlgorithmChanged}
+                />
+                <button className={styles.showSelectAlgorithmModalButton} onClick={onShowSelectAlgorithmModal}>
+                    {'Select Algorithm'}
+                </button>
+            </div>
+        </div>
+
+        <div className={'relative grid w-full grow place-items-center'}>
+            <Canvas>
+                <Bar data={Array.from(calculationState.current.data)}
+                    sampleCount={calculationState.current.sampleCount}/>
+                <OrthographicCamera makeDefault position={[0, 0, 1]} zoom={1}/>
+            </Canvas>
+        </div>
+    </div>;
+};

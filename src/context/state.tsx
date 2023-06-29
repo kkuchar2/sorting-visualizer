@@ -1,8 +1,4 @@
-import React, {useEffect, useState} from 'react';
-
-import {DefaultSeo} from 'next-seo';
-
-import SEO from '../../next-seo.config';
+import React, { useEffect, useState } from 'react';
 
 export const AppWrapper = ({ children }) => {
     const [mounted, setMounted] = useState(false);
@@ -12,9 +8,6 @@ export const AppWrapper = ({ children }) => {
     }, []);
 
     return <>
-        <DefaultSeo {...SEO} />
-
-        {/*Prevent FOUC*/}
         <div style={{ visibility: !mounted ? 'hidden' : 'visible' }}>
             {children}
         </div>

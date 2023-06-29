@@ -1,6 +1,7 @@
-import {CheckSortPause, IsAborted, mark, notifySortUpdate, sortState, unmark} from '../worker.utils';
+import { CheckSortPause, IsAborted, mark, notifySortUpdate, sortState, unmark } from '../worker.utils';
 
-export const insertionSort = async () => {
+async function insertionSort() {
+
     let length = sortState.data.length;
     for (let i = 1; i < length; i++) {
 
@@ -25,4 +26,6 @@ export const insertionSort = async () => {
 
         unmark(i);
     }
-};
+}
+
+export default insertionSort;

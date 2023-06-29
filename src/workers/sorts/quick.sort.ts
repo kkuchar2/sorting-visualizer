@@ -1,6 +1,16 @@
-import {CheckSortPause, IsAborted, mark, notifySortUpdate, sortState} from '../worker.utils';
+import { CheckSortPause, IsAborted, mark, notifySortUpdate, sortState } from '../worker.utils';
 
-const partition = (left, right) => {
+async function quickSort() {
+    await quickSortImpl(0, sortState.data.length - 1);
+}
+
+function swap(leftIndex, rightIndex) {
+    const temp = sortState.data[leftIndex];
+    sortState.data[leftIndex] = sortState.data[rightIndex];
+    sortState.data[rightIndex] = temp;
+}
+
+function partition(left, right) {
     const pivot = sortState.data[Math.floor((right + left) / 2)];
     let // Middle element
         i = left, // Left pointer/**/
@@ -22,15 +32,9 @@ const partition = (left, right) => {
         notifySortUpdate();
     }
     return i;
-};
+}
 
-const swap = (leftIndex, rightIndex) => {
-    const temp = sortState.data[leftIndex];
-    sortState.data[leftIndex] = sortState.data[rightIndex];
-    sortState.data[rightIndex] = temp;
-};
-
-const quickSortImpl = async (left, right) => {
+async function quickSortImpl(left, right) {
     await CheckSortPause();
 
     if (IsAborted()) {
@@ -48,6 +52,6 @@ const quickSortImpl = async (left, right) => {
             await quickSortImpl(index, right);
         }
     }
-};
+}
 
-export const quickSort = async () => quickSortImpl(0, sortState.data.length - 1);
+export default quickSort;

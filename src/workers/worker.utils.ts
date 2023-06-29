@@ -1,6 +1,8 @@
-import {bubbleSort, insertionSort, mergeSortRecursive, quickSort} from './sorts';
-
-import {getRandomUInt8} from 'util/util';
+import { getRandomUInt8 } from '@/util/util';
+import bubbleSort from '@/workers/sorts/bubble.sort';
+import insertionSort from '@/workers/sorts/insertion.sort';
+import mergeSortRecursive from '@/workers/sorts/merge.recursive.sort';
+import quickSort from '@/workers/sorts/quick.sort';
 
 let SLOWDOWN_FACTOR_MS = 1;
 

@@ -1,0 +1,24 @@
+.controlButtons {
+  flex-wrap: wrap;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+
+  button {
+    background: rgba(255, 255, 255, 0.08);
+    width: 100px;
+    border-radius: 5px;
+    color: white;
+    padding: 10px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    &:disabled {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.2);
+    }
+  }
+}

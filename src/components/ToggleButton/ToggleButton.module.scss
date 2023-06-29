@@ -1,0 +1,13 @@
+.toggleButton {
+
+  background: rgba(26, 97, 88, 0.53);
+  color: rgba(47, 255, 175, 0.58);
+  padding: 5px 15px;
+  border-radius: 100px;
+
+  &.active {
+    background: rgba(26, 97, 88, 1);
+    color: rgba(47, 255, 175, 1);
+    outline: 3px solid #2fffaf;
+  }
+}

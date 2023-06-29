@@ -1,6 +1,6 @@
-import {CheckSortPause, IsAborted, mark, notifySortUpdate, sortState, unmark} from '../worker.utils';
+import { CheckSortPause, IsAborted, mark, notifySortUpdate, sortState, unmark } from '../worker.utils';
 
-const merge = async (start, mid, end) => {
+async function merge(start, mid, end) {
     if (IsAborted()) {
         return;
     }
@@ -49,9 +49,9 @@ const merge = async (start, mid, end) => {
     notifySortUpdate();
 
     await CheckSortPause();
-};
+}
 
-const mergeSort = async (start, end) => {
+async function mergeSort(start, end) {
     if (IsAborted()) {
         return;
     }
@@ -67,6 +67,10 @@ const mergeSort = async (start, end) => {
     await merge(start, middle, end);
 
     notifySortUpdate();
-};
+}
 
-export const mergeSortRecursive = async () => mergeSort(0, sortState.data.length - 1);
+async function mergeSortRecursive() {
+    await mergeSort(0, sortState.data.length - 1);
+}
+
+export default mergeSortRecursive;

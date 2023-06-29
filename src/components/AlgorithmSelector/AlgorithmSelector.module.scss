@@ -1,0 +1,9 @@
+.algorithmSelector {
+  display: none;
+
+  @media (min-width: 1280px) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+}
