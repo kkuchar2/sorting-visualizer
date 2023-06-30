@@ -1,10 +1,11 @@
-import { CheckSortPause, IsAborted, mark, notifySortUpdate, sortState } from '../worker.utils';
+import { CheckSortPause, IsAborted, mark, notifySortUpdate, setSound, sortState } from '../worker.utils';
 
 async function quickSort() {
     await quickSortImpl(0, sortState.data.length - 1);
 }
 
 function swap(leftIndex, rightIndex) {
+    setSound(leftIndex);
     const temp = sortState.data[leftIndex];
     sortState.data[leftIndex] = sortState.data[rightIndex];
     sortState.data[rightIndex] = temp;

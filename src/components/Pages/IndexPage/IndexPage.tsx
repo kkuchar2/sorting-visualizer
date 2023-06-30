@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import styles from './IndexPage.module.scss';
 
@@ -12,12 +12,21 @@ import { SortAlgorithm, sortingAlgorithms } from '@/config';
 
 export default function IndexPage() {
 
+    const [mounted, setMounted] = useState(false);
     const [selectedAlgorithm, setSelectedAlgorithm] = useState<SortAlgorithm>(sortingAlgorithms[1]);
 
     const [showSelectAlgorithmModal, setShowSelectAlgorithmModal] = useState(false);
 
-    return <div className={'relative flex h-screen w-full flex-col xl:flex-row'}>
+    useEffect(() => {
+        setMounted(true);
 
+    }, []);
+
+    if (!mounted) {
+        return null;
+    }
+
+    return <div className={'relative flex h-screen w-full flex-col xl:flex-row'}>
         <div className={'hidden max-h-screen w-full place-items-center overflow-auto rounded-md xl:grid xl:w-1/2'}>
             <SourceCodePreview sourceCode={sourceMap[selectedAlgorithm.value]}/>
         </div>

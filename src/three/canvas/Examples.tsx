@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef } from 'react';
 
 import { useThree } from '@react-three/fiber';
-import { InstancedMesh, Object3D } from 'three';
+import { Color, InstancedMesh, Object3D } from 'three';
 
 import { MAX_SAMPLE_VALUE } from '@/config';
 
 interface BarChartProps {
     sampleCount: number;
     data: number[];
+    marker?: number;
 }
 
 const calculateBarsSizes = (width: number, barsCount: number) => {
@@ -46,7 +47,7 @@ const calculateBarsSizes = (width: number, barsCount: number) => {
 };
 
 export function Bar(props: BarChartProps) {
-    const { sampleCount, data } = props;
+    const { sampleCount, data, marker } = props;
 
     const meshRef = useRef<InstancedMesh>();
 
@@ -72,15 +73,17 @@ export function Bar(props: BarChartProps) {
             );
             anonymousObject.updateMatrix();
             meshRef.current.setMatrixAt(i, anonymousObject.matrix);
+            meshRef.current.setColorAt(i, new Color(marker === i ? '#ff0000' : '#ffffff'));
         }
 
         meshRef.current.instanceMatrix.needsUpdate = true;
-    }, [data, sceneSize, sampleCount]);
+        meshRef.current.instanceColor.needsUpdate = true;
+    }, [sceneSize, sampleCount]);
 
     return (
         <instancedMesh ref={meshRef} args={[null, null, sampleCount]}>
             <planeBufferGeometry args={[1, 1]}/>
-            <meshBasicMaterial color={'#ffffff'}/>
+            <meshBasicMaterial/>
         </instancedMesh>
     );
 }

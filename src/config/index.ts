@@ -6,7 +6,7 @@ export interface SortAlgorithm {
 const MIN_SAMPLE_COUNT = 10;
 const MAX_SAMPLE_COUNT = 1000;
 const DEFAULT_SAMPLE_COUNT = 100;
-const MAX_SAMPLE_VALUE = 256;
+const MAX_SAMPLE_VALUE = 5000;
 const SLOWDOWN_FACTOR_MS = 1;
 
 const sortingAlgorithms = [

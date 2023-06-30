@@ -1,4 +1,4 @@
-import { CheckSortPause, IsAborted, mark, notifySortUpdate, sortState, unmark } from '../worker.utils';
+import { CheckSortPause, IsAborted, mark, notifySortUpdate, setSound, sortState, unmark } from '../worker.utils';
 
 async function merge(start, mid, end) {
     if (IsAborted()) {
@@ -40,6 +40,7 @@ async function merge(start, mid, end) {
 
     for (let i = 0; i < merged.length; i++) {
         mark(start + i, 3);
+        setSound(start + i);
         sortState.data[start + i] = merged[i];
         notifySortUpdate();
     }

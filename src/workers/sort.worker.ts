@@ -1,6 +1,7 @@
 import {
     getSortMethod,
-    initSharedData, notifySortDataInitComplete,
+    initSharedData,
+    notifySortDataInitComplete,
     notifySortDataShuffled,
     onSortMethodExit,
     setSlowdownFactor,
@@ -21,7 +22,7 @@ const requestMap = {
 };
 
 const onSharedDataInitRequest = msg => {
-    initSharedData(msg.buffer, msg.controlData, msg.maxValue).then(notifySortDataInitComplete);
+    initSharedData(msg.buffer, msg.controlData, msg.soundData, msg.maxValue).then(notifySortDataInitComplete);
 };
 
 const onSortRequest = msg => {

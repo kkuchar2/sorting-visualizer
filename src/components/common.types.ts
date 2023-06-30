@@ -6,9 +6,12 @@ export interface CalculationState {
      * controlData[0] = 0 - not paused, 1 - paused
      * controlData[1] = 0 - not aborted, 1 - aborted
      * controlData[2] = value - slowdown factor of notifications from worker
+     *
+     * soundData[0] = what frequency to play
      */
     controlData: Uint8Array,
-    data: Uint8Array,
+    soundData: Uint32Array,
+    data: Uint16Array,
     sampleCount: number,
     dirty: boolean,
     locked: boolean

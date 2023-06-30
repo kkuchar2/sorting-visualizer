@@ -10,7 +10,7 @@ import { ControlButtons } from '@/components/ControlButtons/ControlButtons';
 import styles from '@/components/Pages/IndexPage/IndexPage.module.scss';
 import { DEFAULT_SAMPLE_COUNT, MAX_SAMPLE_VALUE, SLOWDOWN_FACTOR_MS, SortAlgorithm, sortingAlgorithms } from '@/config';
 import { Bar } from '@/three/canvas/Examples';
-import { createSAB } from '@/util/util';
+import { createSAB16, createSAB32, createSAB8 } from '@/util/util';
 import { registerSortWorker, sendMessage, unregisterWorker } from '@/workers/workers';
 
 interface VisualiserProps {
@@ -23,13 +23,19 @@ export const Visualiser = (props: VisualiserProps) => {
 
     const { algorithm, onSelectedAlgorithmChanged, onShowSelectAlgorithmModal } = props;
 
+    const [dataPlaying, setDataPlaying] = useState(false);
+    const osc = useRef(null);
+
     const calculationState = useRef<CalculationState>({
-        controlData: createSAB(3),
-        data: createSAB(DEFAULT_SAMPLE_COUNT),
+        controlData: createSAB8(3),
+        soundData: createSAB32(2),
+        data: createSAB16(DEFAULT_SAMPLE_COUNT),
         sampleCount: DEFAULT_SAMPLE_COUNT,
         dirty: true,
         locked: false
     });
+
+    const audioContextRef = useRef<AudioContext>();
 
     const [sorted, setSorted] = useState(false);
     const [sorting, setSorting] = useState(false);
@@ -47,6 +53,8 @@ export const Visualiser = (props: VisualiserProps) => {
                     forceUpdate();
                     break;
                 case 'sort':
+                    const freq = Array.from(calculationState.current.soundData)[0];
+                    osc.current.frequency.value = freq;
                     forceUpdate();
                     break;
                 case 'shuffle':
@@ -55,6 +63,7 @@ export const Visualiser = (props: VisualiserProps) => {
                     forceUpdate();
                     break;
                 case 'sortFinished':
+                    audioContextRef.current.suspend();
                     setSorting(false);
                     setSorted(e.data.payload.sorted);
                     break;
@@ -64,8 +73,27 @@ export const Visualiser = (props: VisualiserProps) => {
         sendMessage(worker.current, 'initSharedData', {
             buffer: calculationState.current.data,
             controlData: calculationState.current.controlData,
+            soundData: calculationState.current.soundData,
             maxValue: MAX_SAMPLE_VALUE
         });
+
+        const audioContext = new AudioContext();
+
+        osc.current = audioContext.createOscillator();
+        const node = audioContext.createGain();
+        node.gain.value = 0.01;
+
+        osc.current.type = 'sine';
+        osc.current.frequency.value = 100;
+
+        osc.current.connect(node);
+        node.connect(audioContext.destination);
+        osc.current.start();
+
+        audioContextRef.current = audioContext;
+        audioContext.suspend();
+
+        return () => osc.current.disconnect(audioContext.destination);
 
         return () => {
             if (worker.current) {
@@ -74,7 +102,20 @@ export const Visualiser = (props: VisualiserProps) => {
         };
     }, []);
 
+    const toggleOscillator = () => {
+        if (dataPlaying) {
+            audioContextRef.current.suspend();
+        }
+        else {
+            osc.current.frequency.value = 440;
+            console.log('Frequency: ', calculationState.current.soundData[0]);
+            audioContextRef.current.resume();
+        }
+        setDataPlaying((play) => !play);
+    };
+
     const onSortButtonPressed = useCallback(() => {
+        audioContextRef.current.resume();
         calculationState.current.dirty = false;
         calculationState.current.controlData[0] = 0;
         calculationState.current.controlData[1] = 0;
@@ -85,17 +126,20 @@ export const Visualiser = (props: VisualiserProps) => {
     }, [algorithm]);
 
     const onStopButtonPressed = useCallback(() => {
+        audioContextRef.current.suspend();
         calculationState.current.controlData[1] = 1;
         setPaused(false);
         setSorting(false);
     }, [calculationState]);
 
     const onPauseButtonPressed = useCallback(() => {
+        audioContextRef.current.suspend();
         setPaused(true);
         calculationState.current.controlData[0] = 1;
     }, [calculationState]);
 
     const onResumeButtonPressed = useCallback(() => {
+        audioContextRef.current.resume();
         setPaused(false);
         calculationState.current.controlData[0] = 0;
     }, [calculationState]);
@@ -106,17 +150,19 @@ export const Visualiser = (props: VisualiserProps) => {
     }, [worker]);
 
     const updateSampleCount = useThrottleCallback(newSampleCount => {
+
         setSorted(false);
 
         if (calculationState.current.locked) {
             return;
         }
 
-        const newData = createSAB(newSampleCount);
+        const newData = createSAB16(newSampleCount);
 
         calculationState.current = {
             controlData: calculationState.current.controlData,
             data: newData,
+            soundData: calculationState.current.soundData,
             sampleCount: newSampleCount,
             dirty: true,
             locked: true
@@ -125,6 +171,7 @@ export const Visualiser = (props: VisualiserProps) => {
         sendMessage(worker.current, 'initSharedData', {
             buffer: newData,
             controlData: calculationState.current.controlData,
+            soundData: calculationState.current.soundData,
             maxValue: MAX_SAMPLE_VALUE
         });
 
@@ -155,7 +202,7 @@ export const Visualiser = (props: VisualiserProps) => {
             </div>
             <input id={'samples-range'}
                 data-content={calculationState.current.sampleCount}
-                className={styles.slider} type={'range'} min={10} max={10000}
+                className={styles.slider} type={'range'} min={10} max={5000}
                 value={calculationState.current.sampleCount}
                 onChange={e => updateSampleCount(parseInt(e.target.value))}/>
         </div>
@@ -176,6 +223,7 @@ export const Visualiser = (props: VisualiserProps) => {
         <div className={'relative grid w-full grow place-items-center'}>
             <Canvas>
                 <Bar data={Array.from(calculationState.current.data)}
+                    marker={Array.from(calculationState.current.soundData)[1]}
                     sampleCount={calculationState.current.sampleCount}/>
                 <OrthographicCamera makeDefault position={[0, 0, 1]} zoom={1}/>
             </Canvas>

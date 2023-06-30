@@ -1,4 +1,4 @@
-import { CheckSortPause, IsAborted, mark, notifySortUpdate, sortState, unmark } from '../worker.utils';
+import { CheckSortPause, IsAborted, mark, notifySortUpdate, setSound, sortState, unmark } from '../worker.utils';
 
 async function insertionSort() {
 
@@ -17,6 +17,7 @@ async function insertionSort() {
         let j = i - 1;
 
         while (j >= 0 && sortState.data[j] > key) {
+            setSound(j);
             sortState.data[j + 1] = sortState.data[j];
             mark(j, 0);
             notifySortUpdate();

@@ -1,14 +1,25 @@
-import { getRandomUInt8 } from '@/util/util';
+import { MAX_SAMPLE_VALUE } from '@/config';
+import { getRandomUInt16 } from '@/util/util';
 import bubbleSort from '@/workers/sorts/bubble.sort';
 import insertionSort from '@/workers/sorts/insertion.sort';
 import mergeSortRecursive from '@/workers/sorts/merge.recursive.sort';
 import quickSort from '@/workers/sorts/quick.sort';
 
 let SLOWDOWN_FACTOR_MS = 1;
+export const MIN_FREQ = 80;
+export const MAX_FREQ = 700;
+
+export const getSound = (value: number) => ((MAX_FREQ - MIN_FREQ) / MAX_SAMPLE_VALUE) * value + MIN_FREQ;
+
+export const setSound = (index: number) => {
+    sortState.soundData[0] = getSound(sortState.data[index]);
+    sortState.soundData[1] = index;
+};
 
 export const sortState = {
     data: [],
     marks: [],
+    soundData: [440],
     controlData: [0, 0, 1]
 };
 
@@ -71,18 +82,19 @@ export const onSortMethodExit = () => postMessage({ type: 'sortFinished', payloa
 
 export const getSortMethod = (algorithm) => sortAlgorithmMap[algorithm];
 
-export const initSharedData = async (buffer, controlBuffer, maxValue) => {
+export const initSharedData = async (buffer, controlBuffer, soundBuffer, maxValue) => {
     sortState.data = buffer;
     for (let i = 0; i < sortState.data.length; i++) {
-        sortState.data[i] = getRandomUInt8(1, maxValue);
+        sortState.data[i] = getRandomUInt16(1, maxValue);
     }
     sortState.controlData = controlBuffer;
+    sortState.soundData = soundBuffer;
     sortState.marks = [];
 };
 
 export const shuffle = async (maxValue) => {
     for (let i = 0; i < sortState.data.length; i++) {
-        sortState.data[i] = getRandomUInt8(1, maxValue);
+        sortState.data[i] = getRandomUInt16(1, maxValue);
     }
 };
 
