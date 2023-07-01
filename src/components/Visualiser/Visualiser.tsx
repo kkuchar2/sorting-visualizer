@@ -83,7 +83,7 @@ export const Visualiser = (props: VisualiserProps) => {
         const node = audioContext.createGain();
         node.gain.value = 0.05;
 
-        osc.current.type = 'sine';
+        osc.current.type = 'triangle';
 
         osc.current.connect(node);
         node.connect(audioContext.destination);

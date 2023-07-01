@@ -25,8 +25,9 @@ const onSharedDataInitRequest = msg => {
     initSharedData(msg.buffer, msg.controlData, msg.soundData, msg.maxValue).then(notifySortDataInitComplete);
 };
 
-const onSortRequest = msg => {
-    getSortMethod(msg.algorithm)().then(onSortMethodExit);
+const onSortRequest = async msg => {
+    await getSortMethod(msg.algorithm)();
+    onSortMethodExit();
 };
 
 const onShuffleRequest = msg => {

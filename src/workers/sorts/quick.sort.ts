@@ -1,4 +1,4 @@
-import { CheckSortPause, IsAborted, mark, notifySortUpdate, setSound, sortState } from '../worker.utils';
+import { CheckSortPause, IsAborted, notifySortUpdate, setSound, sortState } from '../worker.utils';
 
 async function quickSort() {
     await quickSortImpl(0, sortState.data.length - 1);
@@ -28,8 +28,6 @@ function partition(left, right) {
             i++;
             j--;
         }
-
-        mark(i, 1);
         notifySortUpdate();
     }
     return i;

@@ -7,7 +7,7 @@ import quickSort from '@/workers/sorts/quick.sort';
 
 let SLOWDOWN_FACTOR_MS = 1;
 export const MIN_FREQ = 80;
-export const MAX_FREQ = 700;
+export const MAX_FREQ = 1300;
 
 export const getSound = (value: number) => ((MAX_FREQ - MIN_FREQ) / MAX_SAMPLE_VALUE) * value + MIN_FREQ;
 
@@ -18,7 +18,6 @@ export const setSound = (index: number) => {
 
 export const sortState = {
     data: [],
-    marks: [],
     soundData: [440],
     controlData: [0, 0, 1]
 };
@@ -58,22 +57,7 @@ export const notifySortDataShuffled = () => notify('shuffle', [], false, false);
 export const notifySortDataInitComplete = () => notify('init', [], false, false);
 
 export const notifySortUpdate = (forceSend = false) => {
-    notify('sort', { marks: sortState.marks }, !forceSend, true, 16);
-};
-
-export const mark = (idx, color = 0) => {
-    sortState.marks[idx] = color;
-};
-
-export const markExclusive = (idx, color = 0) => {
-    for (let i = 0; i < sortState.marks.length; i++) {
-        sortState.marks[i] = 0;
-    }
-    sortState.marks[idx] = color;
-};
-
-export const unmark = (idx) => {
-    sortState.marks[idx] = 0;
+    notify('sort', {}, !forceSend, true, 16);
 };
 
 export const setSlowdownFactor = (m) => SLOWDOWN_FACTOR_MS = m.value;
@@ -89,7 +73,6 @@ export const initSharedData = async (buffer, controlBuffer, soundBuffer, maxValu
     }
     sortState.controlData = controlBuffer;
     sortState.soundData = soundBuffer;
-    sortState.marks = [];
 };
 
 export const shuffle = async (maxValue) => {
