@@ -40,6 +40,7 @@
     overflow: hidden;
     width: 100%;
     animation: showModal 0.5s cubic-bezier(0.075, 0.82, 0.165, 1) forwards;
+    border-radius: 10px;
 }
 
 .modal-body {
