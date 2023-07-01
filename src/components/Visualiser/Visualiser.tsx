@@ -8,6 +8,7 @@ import { AlgorithmSelector } from '@/components/AlgorithmSelector/AlgorithmSelec
 import { CalculationState } from '@/components/common.types';
 import { ControlButtons } from '@/components/ControlButtons/ControlButtons';
 import styles from '@/components/Pages/IndexPage/IndexPage.module.scss';
+import { Slider } from '@/components/Slider/Slider';
 import { DEFAULT_SAMPLE_COUNT, MAX_SAMPLE_VALUE, SLOWDOWN_FACTOR_MS, SortAlgorithm, sortingAlgorithms } from '@/config';
 import { Bar } from '@/three/canvas/Examples';
 import { createSAB16, createSAB32, createSAB8 } from '@/util/util';
@@ -189,11 +190,11 @@ export const Visualiser = (props: VisualiserProps) => {
                     {calculationState.current.sampleCount}
                 </div>
             </div>
-            <input id={'samples-range'}
-                data-content={calculationState.current.sampleCount}
-                className={styles.slider} type={'range'} min={10} max={5000}
+            <Slider id={'samples-range'}
+                min={10}
+                max={5000}
                 value={calculationState.current.sampleCount}
-                onChange={e => updateSampleCount(parseInt(e.target.value))}/>
+                onChange={updateSampleCount}/>
         </div>
 
         <div className={'grid w-full place-items-center'}>
