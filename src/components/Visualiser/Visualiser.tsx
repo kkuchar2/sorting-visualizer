@@ -168,20 +168,21 @@ export const Visualiser = (props: VisualiserProps) => {
     }, 60);
 
     return <div className={'flex h-full w-full flex-col gap-[30px]'}>
+
         <div className={'grid w-full place-items-center'}>
-            <ControlButtons
-                sorted={sorted}
-                sorting={sorting}
-                paused={paused}
-                requestShuffleData={requestShuffleData}
-                onPauseButtonPressed={onPauseButtonPressed}
-                onResumeButtonPressed={onResumeButtonPressed}
-                onStopButtonPressed={onStopButtonPressed}
-                onSortButtonPressed={onSortButtonPressed}
-            />
+            <div className={'flex max-w-[600px] flex-wrap justify-center gap-3'}>
+                <AlgorithmSelector
+                    algorithms={sortingAlgorithms}
+                    currentAlgorithm={algorithm}
+                    onSelectedAlgorithmSelected={onSelectedAlgorithmChanged}
+                />
+                <button className={styles.showSelectAlgorithmModalButton} onClick={onShowSelectAlgorithmModal}>
+                    {'Select Algorithm'}
+                </button>
+            </div>
         </div>
 
-        <div className={'w-full'}>
+        <div className={'flex w-full flex-col gap-3'}>
             <div className={'flex w-full items-center justify-center p-3'}>
                 <div className={styles.samplesLabel}>
                     {'Samples'}
@@ -199,16 +200,16 @@ export const Visualiser = (props: VisualiserProps) => {
         </div>
 
         <div className={'grid w-full place-items-center'}>
-            <div className={'flex max-w-[600px] flex-wrap justify-center gap-3'}>
-                <AlgorithmSelector
-                    algorithms={sortingAlgorithms}
-                    currentAlgorithm={algorithm}
-                    onSelectedAlgorithmSelected={onSelectedAlgorithmChanged}
-                />
-                <button className={styles.showSelectAlgorithmModalButton} onClick={onShowSelectAlgorithmModal}>
-                    {'Select Algorithm'}
-                </button>
-            </div>
+            <ControlButtons
+                sorted={sorted}
+                sorting={sorting}
+                paused={paused}
+                requestShuffleData={requestShuffleData}
+                onPauseButtonPressed={onPauseButtonPressed}
+                onResumeButtonPressed={onResumeButtonPressed}
+                onStopButtonPressed={onStopButtonPressed}
+                onSortButtonPressed={onSortButtonPressed}
+            />
         </div>
 
         <div className={'relative grid w-full grow place-items-center'}>
