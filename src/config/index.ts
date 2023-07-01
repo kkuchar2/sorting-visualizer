@@ -11,7 +11,8 @@ const sortingAlgorithms = [
     { value: 'MergeSort', label: 'MergeSort' },
     { value: 'BubbleSort', label: 'BubbleSort' },
     { value: 'InsertionSort', label: 'InsertionSort' },
-    { value: 'QuickSort', label: 'QuickSort' }
+    { value: 'QuickSort', label: 'QuickSort' },
+    { value: 'CocktailShakerSort', label: 'CocktailShakerSort' }
 ] as SortAlgorithm[];
 
 export {

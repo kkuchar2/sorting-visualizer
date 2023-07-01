@@ -1,6 +1,7 @@
 import { MAX_SAMPLE_VALUE } from '@/config';
 import { getRandomUInt16 } from '@/util/util';
 import bubbleSort from '@/workers/sorts/bubble.sort';
+import cocktailShakerSort from '@/workers/sorts/cocktailShakerSort.sort';
 import insertionSort from '@/workers/sorts/insertion.sort';
 import mergeSortRecursive from '@/workers/sorts/merge.recursive.sort';
 import quickSort from '@/workers/sorts/quick.sort';
@@ -26,7 +27,8 @@ export const sortAlgorithmMap = {
     'QuickSort': quickSort,
     'BubbleSort': bubbleSort,
     'InsertionSort': insertionSort,
-    'MergeSort': mergeSortRecursive
+    'MergeSort': mergeSortRecursive,
+    'CocktailShakerSort': cocktailShakerSort
 };
 
 let previousTime = new Date().getTime();
