@@ -5,13 +5,15 @@ Welcome to Sorting Visualizer.
 I built this application after watching **15 Sorting Algorithms in 6 Minutes** video on YouTube which
 was showing them in action with real time sound effects.
 
+https://www.youtube.com/watch?v=kPRA0W1kECg
+
 I thought that it would be cool to do this the same
-way, but with a twist. All algorithms should be most sperated from presentation layer, so the closes to be raw
-algorithms as possible.
+way (or at least close to it) in React but with a twist. All algorithms should be most sperated from presentation layer, so the closes to be raw
+algorithms as possible. And doing all that in NextJS deplyed on Vercel.
 
 The solution was to use Service Workers to do calculation on a separate thread, store sorted data, markers
 and control flags on SharedArrayBuffer. That way we can squeeze out performance and not insert sorting logic in
-React components.
+React components. By using this buffer we do not have to send data from worker to main thread, just a notification that data is updated.
 
 Presentation layer for data is made with ThreeJS Fiber - rendering instanced quads based on current data state.
 
