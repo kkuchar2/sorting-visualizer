@@ -1,3 +1,15 @@
+.indexPage {
+  position: relative;
+  display: flex;
+  height: 100dvh;
+  width: 100%;
+  flex-direction: column;
+
+  @media (min-width: 1280px) {
+    flex-direction: row;
+  }
+}
+
 .title {
   font-size: clamp(1.5rem, 5vw, 3rem);
   color: white;
@@ -79,10 +91,10 @@
 .showSelectAlgorithmModalButton {
   margin-top: 20px;
   padding: 10px 20px;
-  background: #008cff;
+  background: rgba(255, 255, 255, 0.05);
   color: white;
   font-weight: bold;
-  border-radius: 7px;
+  border-radius: 50px;
   border: none;
   cursor: pointer;
   transition: transform 0.3s cubic-bezier(0.3, 0, 0, 1);
@@ -93,7 +105,6 @@
   }
 
   &:hover {
-    background: #0066ff;
-    transform: scale(1.1);
+    background: rgba(18, 255, 156, 0.58);
   }
 }

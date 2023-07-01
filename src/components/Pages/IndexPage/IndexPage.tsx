@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 
 import styles from './IndexPage.module.scss';
 
+import { AlgorithmListItem } from '@/components/AlgorithmSelector/AlgorithmListItem';
 import Modal from '@/components/ModalSystem/Modal';
 import { SourceCodePreview } from '@/components/SourceCodePreview/SourceCodePreview';
 import { sourceMap } from '@/components/SourceCodePreview/SourceMap';
@@ -26,12 +27,12 @@ export default function IndexPage() {
         return null;
     }
 
-    return <div className={'relative flex h-screen w-full flex-col xl:flex-row'}>
+    return <div className={styles.indexPage}>
         <div className={'hidden max-h-screen w-full place-items-center overflow-auto rounded-md xl:grid xl:w-1/2'}>
             <SourceCodePreview sourceCode={sourceMap[selectedAlgorithm.value]}/>
         </div>
         <div
-            className={'relative flex w-full grow flex-col items-center justify-start gap-5 p-3 py-5 xl:w-1/2 xl:p-[50px]'}>
+            className={'relative flex h-full w-full grow flex-col items-center justify-start gap-5 p-3 py-5 xl:w-1/2 xl:p-[50px]'}>
 
             <div className={'flex h-full w-full flex-col items-center justify-center gap-6 px-[20px]'}>
                 <div className={styles.title}>
@@ -46,24 +47,12 @@ export default function IndexPage() {
                 title={'Select algorithm'}
                 onClose={() => setShowSelectAlgorithmModal(false)}>
                 <div className={'flex flex-col'}>
-                    {sortingAlgorithms.map((algorithm, index) => <button
+                    {sortingAlgorithms.map((algorithm, index) => <AlgorithmListItem
                         key={index}
-                        className={'border-1 flex w-full justify-start border-white p-3 px-5 text-xl text-white'}
                         onClick={() => {
                             setSelectedAlgorithm(algorithm);
                             setShowSelectAlgorithmModal(false);
-                        }}>
-                        {algorithm.label}
-                    </button>)}
-                    {sortingAlgorithms.map((algorithm, index) => <button
-                        key={index}
-                        className={'border-1 flex w-full justify-start border-white p-3 px-5 text-xl text-white'}
-                        onClick={() => {
-                            setSelectedAlgorithm(algorithm);
-                            setShowSelectAlgorithmModal(false);
-                        }}>
-                        {algorithm.label}
-                    </button>)}
+                        }} algorithm={algorithm}/>)}
                 </div>
             </Modal>}
         </div>

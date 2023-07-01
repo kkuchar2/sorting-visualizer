@@ -2,10 +2,17 @@
 
 import React, { useEffect, useState } from 'react';
 
-import Scrollbars from 'react-custom-scrollbars-2';
 import ReactDOM from 'react-dom';
 
-const Modal = ({ onClose, children, title }) => {
+interface ModalProps {
+    onClose: () => void;
+    title?: string;
+    children: React.ReactNode;
+}
+
+const Modal = (props: ModalProps) => {
+
+    const { onClose, title, children } = props;
 
     const [mount, setMount] = useState(false);
 
@@ -37,12 +44,9 @@ const Modal = ({ onClose, children, title }) => {
                         </button>
                     </div>
 
-                    <Scrollbars style={{ width: '100%', height: 300 }}>
-                        <div className={'modal-body'}>
-                            {children}
-                        </div>
-                    </Scrollbars>
-
+                    <div className={'modal-body'}>
+                        {children}
+                    </div>
                 </div>
             </div>
         </div>

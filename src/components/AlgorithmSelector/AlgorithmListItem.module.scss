@@ -1,0 +1,12 @@
+.algoListItem {
+  display: flex;
+  justify-content: flex-start;
+  padding: 20px;
+  font-size: 1.25rem;
+  color: white;
+  box-sizing: content-box;
+
+  &:hover {
+    background-color: #3c3c3c;
+  }
+}

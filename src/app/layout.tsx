@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             <main>
                 {children}
             </main>
-            <div id={'modal-root'}/>
+            <div id={'modal-root'} className={'modal-root'}/>
         </body>
     </html>;
 }

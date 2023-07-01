@@ -23,7 +23,6 @@ export const Visualiser = (props: VisualiserProps) => {
 
     const { algorithm, onSelectedAlgorithmChanged, onShowSelectAlgorithmModal } = props;
 
-    const [dataPlaying, setDataPlaying] = useState(false);
     const osc = useRef(null);
 
     const calculationState = useRef<CalculationState>({
@@ -81,7 +80,7 @@ export const Visualiser = (props: VisualiserProps) => {
 
         osc.current = audioContext.createOscillator();
         const node = audioContext.createGain();
-        node.gain.value = 0.01;
+        node.gain.value = 0.05;
 
         osc.current.type = 'sine';
         osc.current.frequency.value = 100;
@@ -93,26 +92,15 @@ export const Visualiser = (props: VisualiserProps) => {
         audioContextRef.current = audioContext;
         audioContext.suspend();
 
-        return () => osc.current.disconnect(audioContext.destination);
-
         return () => {
+
+            osc.current?.disconnect(audioContext.destination);
+
             if (worker.current) {
                 unregisterWorker(worker.current);
             }
         };
     }, []);
-
-    const toggleOscillator = () => {
-        if (dataPlaying) {
-            audioContextRef.current.suspend();
-        }
-        else {
-            osc.current.frequency.value = 440;
-            console.log('Frequency: ', calculationState.current.soundData[0]);
-            audioContextRef.current.resume();
-        }
-        setDataPlaying((play) => !play);
-    };
 
     const onSortButtonPressed = useCallback(() => {
         audioContextRef.current.resume();
