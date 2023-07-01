@@ -9,7 +9,7 @@ https://www.youtube.com/watch?v=kPRA0W1kECg
 
 I thought that it would be cool to do this the same
 way (or at least close to it) in React but with a twist. All algorithms should be most sperated from presentation layer, so the closes to be raw
-algorithms as possible. And doing all that in NextJS deplyed on Vercel.
+algorithms as possible. And doing all that in NextJS deployed on Vercel.
 
 The solution was to use Service Workers to do calculation on a separate thread, store sorted data, markers
 and control flags on SharedArrayBuffer. That way we can squeeze out performance and not insert sorting logic in
