@@ -9,5 +9,15 @@
     background: rgba(26, 97, 88, 1);
     color: rgba(47, 255, 175, 1);
     outline: 3px solid #2fffaf;
+
+    &.disabled {
+      outline: 3px solid rgba(47, 255, 175, 0.41);
+    }
+  }
+
+  &.disabled {
+    background: rgba(26, 97, 88, 0.34);
+    color: rgba(47, 255, 175, 0.38);
+    cursor: not-allowed;
   }
 }

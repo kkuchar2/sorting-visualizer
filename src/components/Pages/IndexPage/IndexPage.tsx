@@ -32,7 +32,7 @@ export default function IndexPage() {
             <SourceCodePreview sourceCode={sourceMap[selectedAlgorithm.value]}/>
         </div>
         <div
-            className={'relative flex h-full w-full grow flex-col items-center justify-start gap-5 p-3 py-5 xl:w-1/2 xl:p-[50px]'}>
+            className={'relative flex h-full w-full grow flex-col items-center justify-start gap-5 p-3 py-[50px] xl:w-1/2 xl:p-[50px]'}>
 
             <div className={'flex h-full w-full flex-col items-center justify-center gap-6 px-[20px]'}>
                 <div className={styles.title}>

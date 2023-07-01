@@ -11,7 +11,7 @@
 }
 
 .title {
-  font-size: clamp(1.5rem, 5vw, 3rem);
+  font-size: clamp(1.8rem, 5vw, 3rem);
   color: white;
   font-weight: 700;
   letter-spacing: -0.05em;
@@ -71,5 +71,24 @@
 
   &:hover {
     background: rgba(18, 255, 156, 0.58);
+  }
+
+  &.disabled {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.38);
+    cursor: not-allowed;
+  }
+}
+
+.selectedAlgorithm {
+  width: 100%;
+  display: grid;
+  place-items: center;
+  color: rgb(18, 255, 156);
+  font-weight: bold;
+  font-size: 1.2rem;
+
+  @media (min-width: 1280px) {
+    display: none;
   }
 }

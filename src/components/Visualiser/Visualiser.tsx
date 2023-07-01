@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 
 import { useThrottleCallback } from '@react-hook/throttle';
 import { OrthographicCamera } from '@react-three/drei';
@@ -172,18 +172,24 @@ export const Visualiser = (props: VisualiserProps) => {
         <div className={'grid w-full place-items-center'}>
             <div className={'flex max-w-[600px] flex-wrap justify-center gap-3'}>
                 <AlgorithmSelector
+                    disabled={sorting}
                     algorithms={sortingAlgorithms}
                     currentAlgorithm={algorithm}
                     onSelectedAlgorithmSelected={onSelectedAlgorithmChanged}
                 />
-                <button className={styles.showSelectAlgorithmModalButton} onClick={onShowSelectAlgorithmModal}>
+                <button className={[styles.showSelectAlgorithmModalButton, sorting && styles.disabled].join(' ')}
+                    onClick={sorting ? undefined : onShowSelectAlgorithmModal}>
                     {'Select Algorithm'}
                 </button>
             </div>
         </div>
 
+        <div className={styles.selectedAlgorithm}>
+            {algorithm.label}
+        </div>
+
         <div className={'flex w-full flex-col gap-3'}>
-            <div className={'flex w-full items-center justify-center p-3'}>
+            <div className={'flex w-full items-center justify-center xl:p-3'}>
                 <div className={styles.samplesLabel}>
                     {'Samples'}
                 </div>
