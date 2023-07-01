@@ -17,9 +17,9 @@
   letter-spacing: -0.05em;
 }
 
-.labelTitle {
-  padding: 7px 15px;
-  background: #008cff;
+.samplesLabel {
+  padding: 10px 15px;
+  background: #3c3c3c;
   color: white;
   font-weight: bold;
   line-height: 1;
@@ -36,14 +36,14 @@
     width: 7px;
     border-top-left-radius: 7px;
     border-bottom-left-radius: 7px;
-    background: #446397;
+    background: #686868;
   }
 }
 
-.label {
+.sampleCount {
   margin-right: 5px;
-  padding: 7px 20px 7px 13px;
-  background: #446397;
+  padding: 10px 20px 10px 13px;
+  background: #686868;
   display: grid;
   place-items: center;
   color: white;

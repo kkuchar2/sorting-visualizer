@@ -183,10 +183,10 @@ export const Visualiser = (props: VisualiserProps) => {
 
         <div className={'w-full'}>
             <div className={'flex w-full items-center justify-center p-3'}>
-                <div className={styles.labelTitle}>
+                <div className={styles.samplesLabel}>
                     {'Samples'}
                 </div>
-                <div className={styles.label}>
+                <div className={styles.sampleCount}>
                     {calculationState.current.sampleCount}
                 </div>
             </div>
