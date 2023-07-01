@@ -49,12 +49,34 @@
   }
 
   &:hover {
+    &:not(:disabled) {
+      &::-webkit-slider-thumb {
+        @include thumb_hover;
+      }
+
+      &::-moz-range-thumb {
+        @include thumb_hover;
+      }
+    }
+  }
+
+  &:disabled {
+    &::-moz-range-track {
+      background: rgba(199, 221, 255, 0.2);
+    }
+
+    &::-webkit-slider-runnable-track {
+      background: rgba(199, 221, 255, 0.2);
+    }
+    
     &::-webkit-slider-thumb {
-      @include thumb_hover;
+      background: rgb(44, 44, 44);
+      cursor: not-allowed;
     }
 
     &::-moz-range-thumb {
-      @include thumb_hover;
+      background: rgb(44, 44, 44);
+      cursor: not-allowed;
     }
   }
 }

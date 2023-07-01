@@ -3,6 +3,7 @@ import styles from './Slider.module.scss';
 interface SliderProps {
     id: string;
     value: number;
+    disabled?: boolean;
     onChange: (value: number) => void;
     min?: number;
     max?: number;
@@ -10,7 +11,7 @@ interface SliderProps {
 
 export const Slider = (props: SliderProps) => {
 
-    const { id, value, onChange, min, max } = props;
+    const { id, value, disabled, onChange, min, max } = props;
 
     return <input
         id={id}
@@ -19,6 +20,7 @@ export const Slider = (props: SliderProps) => {
         min={min}
         max={max}
         value={value}
+        disabled={disabled}
         onChange={e => onChange(parseInt(e.target.value))}
     />;
 };

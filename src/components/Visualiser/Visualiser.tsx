@@ -193,6 +193,7 @@ export const Visualiser = (props: VisualiserProps) => {
             <Slider id={'samples-range'}
                 min={10}
                 max={5000}
+                disabled={sorting}
                 value={calculationState.current.sampleCount}
                 onChange={updateSampleCount}/>
         </div>
