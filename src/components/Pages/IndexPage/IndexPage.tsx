@@ -46,9 +46,10 @@ export default function IndexPage() {
             {showSelectAlgorithmModal && <Modal
                 title={'Select algorithm'}
                 onClose={() => setShowSelectAlgorithmModal(false)}>
-                <div className={'flex flex-col'}>
+                <div className={'flex flex-col gap-3 p-3'}>
                     {sortingAlgorithms.map((algorithm, index) => <AlgorithmListItem
                         key={index}
+                        currentAlgorithm={selectedAlgorithm}
                         onClick={() => {
                             setSelectedAlgorithm(algorithm);
                             setShowSelectAlgorithmModal(false);

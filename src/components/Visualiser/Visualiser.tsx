@@ -83,7 +83,6 @@ export const Visualiser = (props: VisualiserProps) => {
         node.gain.value = 0.05;
 
         osc.current.type = 'sine';
-        osc.current.frequency.value = 100;
 
         osc.current.connect(node);
         node.connect(audioContext.destination);
@@ -94,7 +93,9 @@ export const Visualiser = (props: VisualiserProps) => {
 
         return () => {
 
-            osc.current?.disconnect(audioContext.destination);
+            if (osc.current?.context.state === 'running') {
+                osc.current?.stop();
+            }
 
             if (worker.current) {
                 unregisterWorker(worker.current);

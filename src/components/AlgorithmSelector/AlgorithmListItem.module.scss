@@ -5,6 +5,16 @@
   font-size: 1.25rem;
   color: white;
   box-sizing: content-box;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.04);
+
+  &.active {
+    background-color: rgba(10, 234, 134, 0.53);
+
+    &:hover {
+      background-color: rgba(0, 255, 142, 0.53);
+    }
+  }
 
   &:hover {
     background-color: #3c3c3c;
