@@ -20,4 +20,6 @@ Presentation layer for data is made with ThreeJS Fiber - rendering instanced qua
 On top of it I added oscillator to play sound of currently accessed element (or swapped etc.)
 plus side view with component rendering preprocessed source of file responsible for sorting.
 
+![sort](https://github.com/kkuchar2/sorting-visualizer/assets/23500051/61bc8a67-5fbb-4ecd-9d69-4c430d88ff32)
+
 Check out live version at https://sortingvis.kkucharski.com/
