@@ -1,230 +1,231 @@
-import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 
-import { useThrottleCallback } from '@react-hook/throttle';
-import { Canvas } from '@react-three/fiber';
+import { useThrottleCallback } from '@react-hook/throttle'
+import { Canvas } from '@react-three/fiber'
 
-import { AlgorithmSelector } from '@/components/AlgorithmSelector/AlgorithmSelector';
-import { CalculationState } from '@/components/common.types';
-import { ControlButtons } from '@/components/ControlButtons/ControlButtons';
-import styles from '@/components/Pages/IndexPage/IndexPage.module.scss';
-import { Slider } from '@/components/Slider/Slider';
-import { DEFAULT_SAMPLE_COUNT, MAX_SAMPLE_VALUE, SLOWDOWN_FACTOR_MS, SortAlgorithm, sortingAlgorithms } from '@/config';
-import { Bar } from '@/three/canvas/Examples';
-import { ChartCamera } from '@/three/canvas/ChartCamera';
-import { createSAB16, createSAB32, createSAB8 } from '@/util/util';
-import { registerSortWorker, sendMessage, unregisterWorker } from '@/workers/workers';
+import { SoundEngine } from '@/audio/soundEngine'
+import { AlgorithmSelector } from '@/components/AlgorithmSelector/AlgorithmSelector'
+import { CalculationState } from '@/components/common.types'
+import { ControlButtons } from '@/components/ControlButtons/ControlButtons'
+import pageStyles from '@/components/Pages/IndexPage/IndexPage.module.scss'
+import { Slider } from '@/components/Slider/Slider'
+import { SoundModeSelector } from '@/components/SoundModeSelector/SoundModeSelector'
+import styles from '@/components/Visualiser/Visualiser.module.scss'
+import { DEFAULT_SAMPLE_COUNT, MAX_SAMPLE_VALUE, SLOWDOWN_FACTOR_MS, SortAlgorithm, sortingAlgorithms } from '@/config'
+import { SoundMode } from '@/config/soundModes'
+import { Bar } from '@/three/canvas/Examples'
+import { ChartCamera } from '@/three/canvas/ChartCamera'
+import { createSAB16, createSAB32, createSAB8 } from '@/util/util'
+import { registerSortWorker, sendMessage, unregisterWorker } from '@/workers/workers'
 
 interface VisualiserProps {
-    algorithm: SortAlgorithm;
-    onSelectedAlgorithmChanged: (algorithm: SortAlgorithm) => void;
-    onShowSelectAlgorithmModal?: () => void;
+  algorithm: SortAlgorithm
+  onSelectedAlgorithmChanged: (algorithm: SortAlgorithm) => void
+  onShowSelectAlgorithmModal?: () => void
 }
 
 export const Visualiser = (props: VisualiserProps) => {
+  const { algorithm, onSelectedAlgorithmChanged, onShowSelectAlgorithmModal } = props
 
-    const { algorithm, onSelectedAlgorithmChanged, onShowSelectAlgorithmModal } = props;
+  const soundEngineRef = useRef<SoundEngine | null>(null)
 
-    const osc = useRef(null);
+  const calculationState = useRef<CalculationState>({
+    controlData: createSAB8(3),
+    soundData: createSAB32(2),
+    data: createSAB16(DEFAULT_SAMPLE_COUNT),
+    sampleCount: DEFAULT_SAMPLE_COUNT,
+    dirty: true,
+    locked: false,
+  })
 
-    const calculationState = useRef<CalculationState>({
-        controlData: createSAB8(3),
-        soundData: createSAB32(2),
-        data: createSAB16(DEFAULT_SAMPLE_COUNT),
-        sampleCount: DEFAULT_SAMPLE_COUNT,
-        dirty: true,
-        locked: false
-    });
+  const [soundMode, setSoundMode] = useState<SoundMode>('triangle')
+  const [sorted, setSorted] = useState(false)
+  const [sorting, setSorting] = useState(false)
+  const [paused, setPaused] = useState(false)
 
-    const audioContextRef = useRef<AudioContext>();
+  const worker = useRef(null)
 
-    const [sorted, setSorted] = useState(false);
-    const [sorting, setSorting] = useState(false);
-    const [paused, setPaused] = useState(false);
+  const [, forceUpdate] = useReducer((x) => x + 1, 0)
 
-    const worker = useRef(null);
+  useEffect(() => {
+    worker.current = registerSortWorker((e) => {
+      switch (e.data.type) {
+        case 'init':
+          calculationState.current.locked = false
+          forceUpdate()
+          break
+        case 'sort':
+          const freq = Array.from(calculationState.current.soundData)[0]
+          soundEngineRef.current?.play(freq)
+          forceUpdate()
+          break
+        case 'shuffle':
+          setSorted(false)
+          calculationState.current.dirty = true
+          forceUpdate()
+          break
+        case 'sortFinished':
+          soundEngineRef.current?.suspend()
+          setSorting(false)
+          setSorted(e.data.payload.sorted)
+          break
+      }
+    })
 
-    const [, forceUpdate] = useReducer((x) => x + 1, 0);
+    sendMessage(worker.current, 'initSharedData', {
+      buffer: calculationState.current.data,
+      controlData: calculationState.current.controlData,
+      soundData: calculationState.current.soundData,
+      maxValue: MAX_SAMPLE_VALUE,
+    })
 
-    useEffect(() => {
-        worker.current = registerSortWorker(e => {
-            switch (e.data.type) {
-                case 'init':
-                    calculationState.current.locked = false;
-                    forceUpdate();
-                    break;
-                case 'sort':
-                    const freq = Array.from(calculationState.current.soundData)[0];
-                    osc.current.frequency.value = freq;
-                    forceUpdate();
-                    break;
-                case 'shuffle':
-                    setSorted(false);
-                    calculationState.current.dirty = true;
-                    forceUpdate();
-                    break;
-                case 'sortFinished':
-                    audioContextRef.current.suspend();
-                    setSorting(false);
-                    setSorted(e.data.payload.sorted);
-                    break;
-            }
-        });
+    const soundEngine = new SoundEngine()
+    soundEngine.init()
+    soundEngineRef.current = soundEngine
 
-        sendMessage(worker.current, 'initSharedData', {
-            buffer: calculationState.current.data,
-            controlData: calculationState.current.controlData,
-            soundData: calculationState.current.soundData,
-            maxValue: MAX_SAMPLE_VALUE
-        });
+    return () => {
+      soundEngineRef.current?.dispose()
+      soundEngineRef.current = null
 
-        const audioContext = new AudioContext();
+      if (worker.current) {
+        unregisterWorker(worker.current)
+      }
+    }
+  }, [])
 
-        osc.current = audioContext.createOscillator();
-        const node = audioContext.createGain();
-        node.gain.value = 0.05;
+  useEffect(() => {
+    soundEngineRef.current?.setMode(soundMode)
+  }, [soundMode])
 
-        osc.current.type = 'triangle';
+  const onSortButtonPressed = useCallback(() => {
+    soundEngineRef.current?.resume()
+    calculationState.current.dirty = false
+    calculationState.current.controlData[0] = 0
+    calculationState.current.controlData[1] = 0
+    calculationState.current.controlData[2] = SLOWDOWN_FACTOR_MS
+    setPaused(false)
+    setSorting(true)
+    sendMessage(worker.current, 'sort', { algorithm: algorithm.value })
+  }, [algorithm])
 
-        osc.current.connect(node);
-        node.connect(audioContext.destination);
-        osc.current.start();
+  const onStopButtonPressed = useCallback(() => {
+    soundEngineRef.current?.suspend()
+    calculationState.current.controlData[1] = 1
+    setPaused(false)
+    setSorting(false)
+  }, [calculationState])
 
-        audioContextRef.current = audioContext;
-        audioContext.suspend();
+  const onPauseButtonPressed = useCallback(() => {
+    soundEngineRef.current?.suspend()
+    setPaused(true)
+    calculationState.current.controlData[0] = 1
+  }, [calculationState])
 
-        return () => {
+  const onResumeButtonPressed = useCallback(() => {
+    soundEngineRef.current?.resume()
+    setPaused(false)
+    calculationState.current.controlData[0] = 0
+  }, [calculationState])
 
-            if (osc.current?.context.state === 'running') {
-                osc.current?.stop();
-            }
+  const requestShuffleData = useCallback(() => {
+    setSorting(false)
+    sendMessage(worker.current, 'shuffle', { maxValue: MAX_SAMPLE_VALUE })
+  }, [worker])
 
-            if (worker.current) {
-                unregisterWorker(worker.current);
-            }
-        };
-    }, []);
+  const updateSampleCount = useThrottleCallback((newSampleCount) => {
+    setSorted(false)
 
-    const onSortButtonPressed = useCallback(() => {
-        audioContextRef.current.resume();
-        calculationState.current.dirty = false;
-        calculationState.current.controlData[0] = 0;
-        calculationState.current.controlData[1] = 0;
-        calculationState.current.controlData[2] = SLOWDOWN_FACTOR_MS;
-        setPaused(false);
-        setSorting(true);
-        sendMessage(worker.current, 'sort', { algorithm: algorithm.value });
-    }, [algorithm]);
+    if (calculationState.current.locked) {
+      return
+    }
 
-    const onStopButtonPressed = useCallback(() => {
-        audioContextRef.current.suspend();
-        calculationState.current.controlData[1] = 1;
-        setPaused(false);
-        setSorting(false);
-    }, [calculationState]);
+    const newData = createSAB16(newSampleCount)
 
-    const onPauseButtonPressed = useCallback(() => {
-        audioContextRef.current.suspend();
-        setPaused(true);
-        calculationState.current.controlData[0] = 1;
-    }, [calculationState]);
+    calculationState.current = {
+      controlData: calculationState.current.controlData,
+      data: newData,
+      soundData: calculationState.current.soundData,
+      sampleCount: newSampleCount,
+      dirty: true,
+      locked: true,
+    }
 
-    const onResumeButtonPressed = useCallback(() => {
-        audioContextRef.current.resume();
-        setPaused(false);
-        calculationState.current.controlData[0] = 0;
-    }, [calculationState]);
+    sendMessage(worker.current, 'initSharedData', {
+      buffer: newData,
+      controlData: calculationState.current.controlData,
+      soundData: calculationState.current.soundData,
+      maxValue: MAX_SAMPLE_VALUE,
+    })
+  }, 60)
 
-    const requestShuffleData = useCallback(() => {
-        setSorting(false);
-        sendMessage(worker.current, 'shuffle', { maxValue: MAX_SAMPLE_VALUE });
-    }, [worker]);
-
-    const updateSampleCount = useThrottleCallback(newSampleCount => {
-
-        setSorted(false);
-
-        if (calculationState.current.locked) {
-            return;
-        }
-
-        const newData = createSAB16(newSampleCount);
-
-        calculationState.current = {
-            controlData: calculationState.current.controlData,
-            data: newData,
-            soundData: calculationState.current.soundData,
-            sampleCount: newSampleCount,
-            dirty: true,
-            locked: true
-        };
-
-        sendMessage(worker.current, 'initSharedData', {
-            buffer: newData,
-            controlData: calculationState.current.controlData,
-            soundData: calculationState.current.soundData,
-            maxValue: MAX_SAMPLE_VALUE
-        });
-
-    }, 60);
-
-    return <div className={'flex h-full w-full flex-col gap-[30px]'}>
-
-        <div className={'grid w-full place-items-center'}>
-            <div className={'flex max-w-[600px] flex-wrap justify-center gap-3'}>
-                <AlgorithmSelector
-                    disabled={sorting}
-                    algorithms={sortingAlgorithms}
-                    currentAlgorithm={algorithm}
-                    onSelectedAlgorithmSelected={onSelectedAlgorithmChanged}
-                />
-                <button className={[styles.showSelectAlgorithmModalButton, sorting && styles.disabled].join(' ')}
-                    onClick={sorting ? undefined : onShowSelectAlgorithmModal}>
-                    {'Select Algorithm'}
-                </button>
-            </div>
+  return (
+    <div className={styles.visualiser}>
+      <div className={styles.toolbar}>
+        <div className={styles.toolbarTop}>
+          <AlgorithmSelector
+            disabled={sorting}
+            algorithms={sortingAlgorithms}
+            currentAlgorithm={algorithm}
+            onSelectedAlgorithmSelected={onSelectedAlgorithmChanged}
+          />
+          <button
+            className={[pageStyles.showSelectAlgorithmModalButton, sorting && pageStyles.disabled].join(' ')}
+            onClick={sorting ? undefined : onShowSelectAlgorithmModal}
+          >
+            {'Select Algorithm'}
+          </button>
         </div>
 
-        <div className={styles.selectedAlgorithm}>
-            {algorithm.label}
+        <div className={pageStyles.selectedAlgorithm}>{algorithm.label}</div>
+
+        <div className={styles.samplesBlock}>
+          <div className={pageStyles.samplesRow}>
+            <span className={pageStyles.samplesLabel}>{'Sample count'}</span>
+            <span className={pageStyles.sampleCount}>{calculationState.current.sampleCount}</span>
+          </div>
+          <Slider
+            id={'samples-range'}
+            min={10}
+            max={5000}
+            disabled={sorting}
+            value={calculationState.current.sampleCount}
+            onChange={updateSampleCount}
+          />
         </div>
 
-        <div className={'flex w-full flex-col gap-3'}>
-            <div className={'flex w-full items-center justify-center xl:p-3'}>
-                <div className={styles.samplesLabel}>
-                    {'Samples'}
-                </div>
-                <div className={styles.sampleCount}>
-                    {calculationState.current.sampleCount}
-                </div>
-            </div>
-            <Slider id={'samples-range'}
-                min={10}
-                max={5000}
-                disabled={sorting}
-                value={calculationState.current.sampleCount}
-                onChange={updateSampleCount}/>
+        <div className={styles.soundBlock}>
+          <span className={pageStyles.samplesLabel}>{'Sound'}</span>
+          <SoundModeSelector
+            disabled={sorting}
+            currentMode={soundMode}
+            onModeSelected={setSoundMode}
+          />
         </div>
 
-        <div className={'grid w-full place-items-center'}>
-            <ControlButtons
-                sorted={sorted}
-                sorting={sorting}
-                paused={paused}
-                requestShuffleData={requestShuffleData}
-                onPauseButtonPressed={onPauseButtonPressed}
-                onResumeButtonPressed={onResumeButtonPressed}
-                onStopButtonPressed={onStopButtonPressed}
-                onSortButtonPressed={onSortButtonPressed}
+        <ControlButtons
+          sorted={sorted}
+          sorting={sorting}
+          paused={paused}
+          requestShuffleData={requestShuffleData}
+          onPauseButtonPressed={onPauseButtonPressed}
+          onResumeButtonPressed={onResumeButtonPressed}
+          onStopButtonPressed={onStopButtonPressed}
+          onSortButtonPressed={onSortButtonPressed}
+        />
+      </div>
+
+      <div className={styles.chartShell}>
+        <div className={styles.chartInner}>
+          <Canvas orthographic>
+            <ChartCamera />
+            <Bar
+              data={Array.from(calculationState.current.data)}
+              marker={Array.from(calculationState.current.soundData)[1]}
+              sampleCount={calculationState.current.sampleCount}
             />
+          </Canvas>
         </div>
-
-        <div className={'relative grid w-full grow place-items-center'}>
-            <Canvas orthographic>
-                <ChartCamera />
-                <Bar data={Array.from(calculationState.current.data)}
-                    marker={Array.from(calculationState.current.soundData)[1]}
-                    sampleCount={calculationState.current.sampleCount}/>
-            </Canvas>
-        </div>
-    </div>;
-};
+      </div>
+    </div>
+  )
+}

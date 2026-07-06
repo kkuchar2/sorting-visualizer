@@ -17,12 +17,15 @@ export const SourceCodePreview = (props: SourceCodePreviewProps) => {
   return (
     <SyntaxHighlighter
       customStyle={{
+        height: '100%',
         maxHeight: '100%',
         margin: 0,
-        fontSize: '15px',
-        background: '#232323',
-        borderRadius: '20px',
-        padding: '20px',
+        padding: '1.25rem',
+        borderRadius: 0,
+        background: 'transparent',
+        fontFamily: 'var(--font-jetbrains), ui-monospace, monospace',
+        fontSize: '0.82rem',
+        lineHeight: 1.65,
         boxSizing: 'border-box',
       }}
       language={'javascript'}

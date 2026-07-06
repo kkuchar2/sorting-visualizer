@@ -73,7 +73,7 @@ export function Bar(props: BarChartProps) {
             );
             anonymousObject.updateMatrix();
             meshRef.current.setMatrixAt(i, anonymousObject.matrix);
-            meshRef.current.setColorAt(i, new Color(marker === i ? '#ff0000' : '#ffffff'));
+            meshRef.current.setColorAt(i, new Color(marker === i ? '#d4655f' : '#c5dcc8'));
         }
 
         meshRef.current.instanceMatrix.needsUpdate = true
