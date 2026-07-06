@@ -1,27 +1,27 @@
-import { ReactNode } from 'react';
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import type { ReactNode } from 'react'
 
-import { Inter } from 'next/font/google';
-import Head from 'next/head';
-
-import '../styles/globals.css';
-import '../styles/modal.css';
+import '../styles/globals.css'
+import '../styles/modal.css'
 
 const inter = Inter({
-    subsets: ['latin'],
-    variable: '--font-inter',
-});
+  subsets: ['latin'],
+  variable: '--font-inter',
+})
+
+export const metadata: Metadata = {
+  title: 'Sorting Visualizer',
+  description: 'Visualisation of common sorting algorithms with ThreeJS and web workers',
+}
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-
-    return <html lang={'en'}>
-        <Head>
-            <link rel={'apple-touch-icon'} href={'/images/pwa/icon_x256.png'}/>
-        </Head>
-        <body className={`${inter.variable} font-sans`}>
-            <main>
-                {children}
-            </main>
-            <div id={'modal-root'} className={'modal-root'}/>
-        </body>
-    </html>;
+  return (
+    <html lang={'en'}>
+      <body className={`${inter.variable} font-sans`}>
+        <main>{children}</main>
+        <div id={'modal-root'} className={'modal-root'} />
+      </body>
+    </html>
+  )
 }

@@ -76,14 +76,16 @@ export function Bar(props: BarChartProps) {
             meshRef.current.setColorAt(i, new Color(marker === i ? '#ff0000' : '#ffffff'));
         }
 
-        meshRef.current.instanceMatrix.needsUpdate = true;
-        meshRef.current.instanceColor.needsUpdate = true;
-    }, [sceneSize, sampleCount]);
+        meshRef.current.instanceMatrix.needsUpdate = true
+        if (meshRef.current.instanceColor) {
+            meshRef.current.instanceColor.needsUpdate = true
+        }
+    }, [sceneSize, sampleCount, data, marker, anonymousObject])
 
     return (
         <instancedMesh ref={meshRef} args={[null, null, sampleCount]}>
-            <planeBufferGeometry args={[1, 1]}/>
-            <meshBasicMaterial/>
+            <planeGeometry args={[1, 1]} />
+            <meshBasicMaterial toneMapped={false} />
         </instancedMesh>
     );
 }

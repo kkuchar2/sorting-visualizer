@@ -20,12 +20,12 @@ const Modal = (props: ModalProps) => {
         setMount(true);
     }, []);
 
-    const handleCloseClick = (e) => {
+    const handleCloseClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         onClose();
     };
 
-    const onOverlayClick = (e) => {
+    const onOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
         e.preventDefault();
         onClose();
     };
