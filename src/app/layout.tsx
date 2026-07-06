@@ -1,13 +1,14 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { JetBrains_Mono } from 'next/font/google'
 import type { ReactNode } from 'react'
 
 import '../styles/globals.css'
 import '../styles/modal.css'
 
-const inter = Inter({
+const jetbrains = JetBrains_Mono({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-jetbrains',
+  weight: ['400', '500'],
 })
 
 export const metadata: Metadata = {
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang={'en'}>
-      <body className={`${inter.variable} font-sans`}>
+      <body className={jetbrains.variable}>
         <main>{children}</main>
         <div id={'modal-root'} className={'modal-root'} />
       </body>
