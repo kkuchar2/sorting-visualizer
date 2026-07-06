@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 
 import { useThrottleCallback } from '@react-hook/throttle';
-import { OrthographicCamera } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 
 import { AlgorithmSelector } from '@/components/AlgorithmSelector/AlgorithmSelector';
@@ -11,6 +10,7 @@ import styles from '@/components/Pages/IndexPage/IndexPage.module.scss';
 import { Slider } from '@/components/Slider/Slider';
 import { DEFAULT_SAMPLE_COUNT, MAX_SAMPLE_VALUE, SLOWDOWN_FACTOR_MS, SortAlgorithm, sortingAlgorithms } from '@/config';
 import { Bar } from '@/three/canvas/Examples';
+import { ChartCamera } from '@/three/canvas/ChartCamera';
 import { createSAB16, createSAB32, createSAB8 } from '@/util/util';
 import { registerSortWorker, sendMessage, unregisterWorker } from '@/workers/workers';
 
@@ -219,11 +219,11 @@ export const Visualiser = (props: VisualiserProps) => {
         </div>
 
         <div className={'relative grid w-full grow place-items-center'}>
-            <Canvas>
+            <Canvas orthographic>
+                <ChartCamera />
                 <Bar data={Array.from(calculationState.current.data)}
                     marker={Array.from(calculationState.current.soundData)[1]}
                     sampleCount={calculationState.current.sampleCount}/>
-                <OrthographicCamera makeDefault position={[0, 0, 1]} zoom={1}/>
             </Canvas>
         </div>
     </div>;
