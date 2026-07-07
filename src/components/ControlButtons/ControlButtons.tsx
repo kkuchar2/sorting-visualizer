@@ -23,25 +23,31 @@ export const ControlButtons = (props: ControlButtonsProps) => {
     onSortButtonPressed,
   } = props
 
+  if (sorting) {
+    return (
+      <div className={styles.controlButtons}>
+        {paused ? (
+          <button className={styles.primary} onClick={onResumeButtonPressed}>
+            {'Resume'}
+          </button>
+        ) : (
+          <button onClick={onPauseButtonPressed}>
+            {'Pause'}
+          </button>
+        )}
+        <button className={styles.danger} onClick={onStopButtonPressed}>
+          {'Stop'}
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className={styles.controlButtons}>
-      <button disabled={sorting} onClick={requestShuffleData}>
+      <button onClick={requestShuffleData}>
         {'Shuffle'}
       </button>
-      <button disabled={paused || !sorting} onClick={onPauseButtonPressed}>
-        {'Pause'}
-      </button>
-      <button disabled={!paused} onClick={onResumeButtonPressed}>
-        {'Resume'}
-      </button>
-      <button className={styles.danger} disabled={!sorting} onClick={onStopButtonPressed}>
-        {'Stop'}
-      </button>
-      <button
-        className={styles.primary}
-        disabled={sorting || paused || sorted}
-        onClick={onSortButtonPressed}
-      >
+      <button className={styles.primary} disabled={sorted} onClick={onSortButtonPressed}>
         {'Sort'}
       </button>
     </div>

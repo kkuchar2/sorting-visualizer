@@ -1,28 +1,32 @@
-import styles from './AlgorithmSelector.module.scss';
-
-import { ToggleButton } from '@/components/ToggleButton/ToggleButton';
-import { SortAlgorithm } from '@/config';
+import { SelectField } from '@/components/SelectField/SelectField'
+import { SortAlgorithm } from '@/config'
 
 interface AlgorithmSelectorProps {
-    disabled?: boolean;
-    currentAlgorithm: SortAlgorithm;
-    algorithms: SortAlgorithm[];
-    onSelectedAlgorithmSelected: (algorithm: SortAlgorithm) => void;
+  disabled?: boolean
+  currentAlgorithm: SortAlgorithm
+  algorithms: SortAlgorithm[]
+  onSelectedAlgorithmSelected: (algorithm: SortAlgorithm) => void
 }
 
 export const AlgorithmSelector = (props: AlgorithmSelectorProps) => {
+  const { currentAlgorithm, algorithms, onSelectedAlgorithmSelected, disabled } = props
 
-    const { currentAlgorithm, algorithms, onSelectedAlgorithmSelected, disabled } = props;
-
-    return <div className={styles.algorithmSelector}>
-        {algorithms.map(algorithm => {
-            return <ToggleButton
-                disabled={disabled}
-                key={algorithm.value}
-                active={algorithm.value === currentAlgorithm.value}
-                onClick={() => onSelectedAlgorithmSelected(algorithm)}
-            >{algorithm.label}
-            </ToggleButton>;
-        })}
-    </div>;
-};
+  return (
+    <SelectField
+      id={'algorithm-select'}
+      label={'Algorithm'}
+      value={currentAlgorithm.value}
+      disabled={disabled}
+      options={algorithms.map((algorithm) => ({
+        value: algorithm.value,
+        label: algorithm.label,
+      }))}
+      onChange={(value) => {
+        const algorithm = algorithms.find((item) => item.value === value)
+        if (algorithm) {
+          onSelectedAlgorithmSelected(algorithm)
+        }
+      }}
+    />
+  )
+}

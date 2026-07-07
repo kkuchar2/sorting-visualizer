@@ -4,9 +4,9 @@ export const cleanSource = (source: string) => {
   const importPattern = /^import.*/
   const exportPattern = /^export.*/
   const setSoundPattern = /setSound.*/
-  const notifyPattern = /notifySortUpdate\(\);/
+  const notifyPattern = /^\s*notifySortUpdate\(\);?\s*$/
   const abortPattern = /if \(IsAborted\(\)\)\s*{[^}]*}/
-  const checkSortPausePattern = /await CheckSortPause\(\);/
+  const checkSortPausePattern = /^\s*await CheckSortPause\(\);?\s*$/
 
   lines = lines.filter((line) => {
     return !(
@@ -23,6 +23,8 @@ export const cleanSource = (source: string) => {
 
   newSource = newSource.replace(/sortState\.data/g, 'data')
   newSource = newSource.replace(/if\s*\(\s*IsAborted\s*\(\s*\)\s*\)\s*\{[\s\S]*?\}/g, '')
+  newSource = newSource.replace(/^\s*await CheckSortPause\(\);?\s*$/gm, '')
+  newSource = newSource.replace(/^\s*notifySortUpdate\(\);?\s*$/gm, '')
   newSource = newSource.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '')
   newSource = newSource.replace(/^\s*[\r\n]/gm, '').trim()
 

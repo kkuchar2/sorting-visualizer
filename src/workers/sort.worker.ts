@@ -1,35 +1,52 @@
 import {
-    getSortMethod,
-    initSharedData,
-    notifySortDataInitComplete,
-    notifySortDataShuffled,
-    onSortMethodExit,
-    setSlowdownFactor,
-    shuffle
-} from './worker.utils';
+  getSortMethod,
+  initSharedData,
+  notifySortDataInitComplete,
+  notifySortDataShuffled,
+  onSortMethodExit,
+  setSlowdownFactor,
+  shuffle,
+} from './worker.utils'
+import type {
+  InitSharedDataPayload,
+  SetSlowdownFactorPayload,
+  ShufflePayload,
+  SortPayload,
+  SortWorkerInboundType,
+} from './worker.types'
 
 /* -------------- Main message handler ------------------ */
 
-self.onmessage = message => requestMap[message.data.type](message.data.payload);
+self.onmessage = (message: MessageEvent<{ type: SortWorkerInboundType; payload: unknown }>) => {
+  const { type, payload } = message.data
+
+  switch (type) {
+    case 'initSharedData':
+      onSharedDataInitRequest(payload as InitSharedDataPayload)
+      break
+    case 'sort':
+      void onSortRequest(payload as SortPayload)
+      break
+    case 'shuffle':
+      onShuffleRequest(payload as ShufflePayload)
+      break
+    case 'setSlowdownFactor':
+      setSlowdownFactor(payload as SetSlowdownFactorPayload)
+      break
+  }
+}
 
 /* ------------------------------------------------------ */
 
-const requestMap = {
-    'initSharedData': e => onSharedDataInitRequest(e),
-    'sort': e => onSortRequest(e),
-    'shuffle': e => onShuffleRequest(e),
-    'setSlowdownFactor': e => setSlowdownFactor(e)
-};
+const onSharedDataInitRequest = (msg: InitSharedDataPayload) => {
+  initSharedData(msg.buffer, msg.controlData, msg.soundData, msg.maxValue).then(notifySortDataInitComplete)
+}
 
-const onSharedDataInitRequest = msg => {
-    initSharedData(msg.buffer, msg.controlData, msg.soundData, msg.maxValue).then(notifySortDataInitComplete);
-};
+const onSortRequest = async (msg: SortPayload) => {
+  await getSortMethod(msg.algorithm)()
+  onSortMethodExit()
+}
 
-const onSortRequest = async msg => {
-    await getSortMethod(msg.algorithm)();
-    onSortMethodExit();
-};
-
-const onShuffleRequest = msg => {
-    shuffle(msg.maxValue).then(notifySortDataShuffled);
-};
+const onShuffleRequest = (msg: ShufflePayload) => {
+  shuffle(msg.maxValue).then(notifySortDataShuffled)
+}

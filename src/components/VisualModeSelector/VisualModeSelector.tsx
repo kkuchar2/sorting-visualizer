@@ -1,6 +1,4 @@
-import styles from './VisualModeSelector.module.scss'
-
-import { ToggleButton } from '@/components/ToggleButton/ToggleButton'
+import { SelectField } from '@/components/SelectField/SelectField'
 import { VisualMode, visualModes } from '@/config/visualModes'
 
 interface VisualModeSelectorProps {
@@ -13,17 +11,13 @@ export const VisualModeSelector = (props: VisualModeSelectorProps) => {
   const { currentMode, onModeSelected, disabled } = props
 
   return (
-    <div className={styles.visualModeSelector}>
-      {visualModes.map((mode) => (
-        <ToggleButton
-          key={mode.value}
-          disabled={disabled}
-          active={mode.value === currentMode}
-          onClick={() => onModeSelected(mode.value)}
-        >
-          {mode.label}
-        </ToggleButton>
-      ))}
-    </div>
+    <SelectField
+      id={'visual-mode-select'}
+      label={'View'}
+      value={currentMode}
+      disabled={disabled}
+      options={visualModes}
+      onChange={onModeSelected}
+    />
   )
 }

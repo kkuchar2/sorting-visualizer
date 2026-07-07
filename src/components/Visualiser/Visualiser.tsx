@@ -7,7 +7,6 @@ import { SoundEngine } from '@/audio/soundEngine'
 import { AlgorithmSelector } from '@/components/AlgorithmSelector/AlgorithmSelector'
 import { CalculationState } from '@/components/common.types'
 import { ControlButtons } from '@/components/ControlButtons/ControlButtons'
-import pageStyles from '@/components/Pages/IndexPage/IndexPage.module.scss'
 import { Slider } from '@/components/Slider/Slider'
 import { SoundModeSelector } from '@/components/SoundModeSelector/SoundModeSelector'
 import { VisualModeSelector } from '@/components/VisualModeSelector/VisualModeSelector'
@@ -19,15 +18,15 @@ import { ChartView } from '@/three/canvas/ChartView'
 import { ChartCamera } from '@/three/canvas/ChartCamera'
 import { createSAB16, createSAB32, createSAB8 } from '@/util/util'
 import { registerSortWorker, sendMessage, unregisterWorker } from '@/workers/workers'
+import type { SortWorkerOutboundMessage } from '@/workers/worker.types'
 
 interface VisualiserProps {
   algorithm: SortAlgorithm
   onSelectedAlgorithmChanged: (algorithm: SortAlgorithm) => void
-  onShowSelectAlgorithmModal?: () => void
 }
 
 export const Visualiser = (props: VisualiserProps) => {
-  const { algorithm, onSelectedAlgorithmChanged, onShowSelectAlgorithmModal } = props
+  const { algorithm, onSelectedAlgorithmChanged } = props
 
   const soundEngineRef = useRef<SoundEngine | null>(null)
 
@@ -40,21 +39,29 @@ export const Visualiser = (props: VisualiserProps) => {
     locked: false,
   })
 
-  const [soundMode, setSoundMode] = useState<SoundMode>('triangle')
+  const [soundMode, setSoundMode] = useState<SoundMode>('sine')
   const [visualMode, setVisualMode] = useState<VisualMode>('bars')
+  const [sampleCount, setSampleCount] = useState(DEFAULT_SAMPLE_COUNT)
   const [sorted, setSorted] = useState(false)
   const [sorting, setSorting] = useState(false)
   const [paused, setPaused] = useState(false)
 
-  const worker = useRef(null)
+  const worker = useRef<Worker | null>(null)
+  const pendingSampleCountRef = useRef<number | null>(null)
+  const applySampleCountRef = useRef<(count: number) => void>(() => {})
 
   const [, forceUpdate] = useReducer((x) => x + 1, 0)
 
   useEffect(() => {
-    worker.current = registerSortWorker((e) => {
+    worker.current = registerSortWorker((e: MessageEvent<SortWorkerOutboundMessage>) => {
       switch (e.data.type) {
         case 'init':
           calculationState.current.locked = false
+          const pendingCount = pendingSampleCountRef.current
+          pendingSampleCountRef.current = null
+          if (pendingCount !== null && pendingCount !== calculationState.current.sampleCount) {
+            applySampleCountRef.current(pendingCount)
+          }
           forceUpdate()
           break
         case 'sort':
@@ -71,6 +78,7 @@ export const Visualiser = (props: VisualiserProps) => {
           soundEngineRef.current?.suspend()
           setSorting(false)
           setSorted(e.data.payload.sorted)
+          forceUpdate()
           break
       }
     })
@@ -135,10 +143,11 @@ export const Visualiser = (props: VisualiserProps) => {
     sendMessage(worker.current, 'shuffle', { maxValue: MAX_SAMPLE_VALUE })
   }, [worker])
 
-  const updateSampleCount = useThrottleCallback((newSampleCount) => {
+  const applySampleCount = useCallback((newSampleCount: number) => {
     setSorted(false)
 
     if (calculationState.current.locked) {
+      pendingSampleCountRef.current = newSampleCount
       return
     }
 
@@ -159,63 +168,73 @@ export const Visualiser = (props: VisualiserProps) => {
       soundData: calculationState.current.soundData,
       maxValue: MAX_SAMPLE_VALUE,
     })
-  }, 60)
+  }, [])
+
+  applySampleCountRef.current = applySampleCount
+
+  const throttledApplySampleCount = useThrottleCallback(applySampleCount, 120)
+
+  const onSampleCountChange = useCallback(
+    (newSampleCount: number) => {
+      setSampleCount(newSampleCount)
+      throttledApplySampleCount(newSampleCount)
+    },
+    [throttledApplySampleCount],
+  )
+
+  const onSampleCountCommit = useCallback(
+    (newSampleCount: number) => {
+      setSampleCount(newSampleCount)
+      applySampleCount(newSampleCount)
+    },
+    [applySampleCount],
+  )
 
   return (
     <div className={styles.visualiser}>
       <div className={styles.toolbar}>
-        <div className={styles.toolbarTop}>
+        <div className={styles.transportRow}>
+          <ControlButtons
+            sorted={sorted}
+            sorting={sorting}
+            paused={paused}
+            requestShuffleData={requestShuffleData}
+            onPauseButtonPressed={onPauseButtonPressed}
+            onResumeButtonPressed={onResumeButtonPressed}
+            onStopButtonPressed={onStopButtonPressed}
+            onSortButtonPressed={onSortButtonPressed}
+          />
+        </div>
+
+        <div className={styles.settingsGrid}>
           <AlgorithmSelector
             disabled={sorting}
             algorithms={sortingAlgorithms}
             currentAlgorithm={algorithm}
             onSelectedAlgorithmSelected={onSelectedAlgorithmChanged}
           />
-          <button
-            className={[pageStyles.showSelectAlgorithmModalButton, sorting && pageStyles.disabled].join(' ')}
-            onClick={sorting ? undefined : onShowSelectAlgorithmModal}
-          >
-            {'Select Algorithm'}
-          </button>
-        </div>
 
-        <div className={pageStyles.selectedAlgorithm}>{algorithm.label}</div>
-
-        <div className={styles.samplesBlock}>
-          <div className={pageStyles.samplesRow}>
-            <span className={pageStyles.samplesLabel}>{'Sample count'}</span>
-            <span className={pageStyles.sampleCount}>{calculationState.current.sampleCount}</span>
+          <div className={styles.samplesField}>
+            <div className={styles.samplesHeader}>
+              <label className={styles.samplesLabel} htmlFor={'samples-range'}>
+                {'Samples'}
+              </label>
+              <span className={styles.sampleCount}>{sampleCount}</span>
+            </div>
+            <Slider
+              id={'samples-range'}
+              min={10}
+              max={5000}
+              disabled={sorting}
+              value={sampleCount}
+              onChange={onSampleCountChange}
+              onCommit={onSampleCountCommit}
+            />
           </div>
-          <Slider
-            id={'samples-range'}
-            min={10}
-            max={5000}
-            disabled={sorting}
-            value={calculationState.current.sampleCount}
-            onChange={updateSampleCount}
-          />
-        </div>
 
-        <div className={styles.soundBlock}>
-          <span className={pageStyles.samplesLabel}>{'Sound'}</span>
-          <SoundModeSelector disabled={sorting} currentMode={soundMode} onModeSelected={setSoundMode} />
-        </div>
-
-        <div className={styles.visualBlock}>
-          <span className={pageStyles.samplesLabel}>{'View'}</span>
+          <SoundModeSelector currentMode={soundMode} onModeSelected={setSoundMode} />
           <VisualModeSelector disabled={sorting} currentMode={visualMode} onModeSelected={setVisualMode} />
         </div>
-
-        <ControlButtons
-          sorted={sorted}
-          sorting={sorting}
-          paused={paused}
-          requestShuffleData={requestShuffleData}
-          onPauseButtonPressed={onPauseButtonPressed}
-          onResumeButtonPressed={onResumeButtonPressed}
-          onStopButtonPressed={onStopButtonPressed}
-          onSortButtonPressed={onSortButtonPressed}
-        />
       </div>
 
       <div className={styles.chartShell}>
@@ -225,7 +244,13 @@ export const Visualiser = (props: VisualiserProps) => {
             <ChartView
               mode={visualMode}
               data={Array.from(calculationState.current.data)}
-              marker={Array.from(calculationState.current.soundData)[1]}
+              marker={
+                sorting
+                  ? calculationState.current.soundData[1]
+                  : sorted
+                    ? calculationState.current.sampleCount - 1
+                    : undefined
+              }
               sampleCount={calculationState.current.sampleCount}
             />
           </Canvas>

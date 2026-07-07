@@ -1,11 +1,15 @@
 'use client'
 
-import { useMemo } from 'react'
+import '@wooorm/starry-night/style/dark'
 
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { tomorrow as style } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { toJsxRuntime } from 'hast-util-to-jsx-runtime'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Fragment, jsx, jsxs } from 'react/jsx-runtime'
 
 import { cleanSource } from '@/components/SourceCodePreview/formatter'
+import { javascriptScope, loadStarryNight } from '@/components/SourceCodePreview/starryNightClient'
+import { useFitCode } from '@/components/SourceCodePreview/useFitCode'
+import styles from '@/components/SourceCodePreview/SourceCodePreview.module.scss'
 
 interface SourceCodePreviewProps {
   sourceCode: string
@@ -13,25 +17,40 @@ interface SourceCodePreviewProps {
 
 export const SourceCodePreview = (props: SourceCodePreviewProps) => {
   const formattedSource = useMemo(() => cleanSource(props.sourceCode), [props.sourceCode])
+  const { containerRef, contentRef } = useFitCode(formattedSource)
+  const [highlightedCode, setHighlightedCode] = useState<ReactNode>(formattedSource)
+
+  useEffect(() => {
+    let cancelled = false
+
+    loadStarryNight()
+      .then((starryNight) => {
+        if (cancelled) {
+          return
+        }
+
+        const tree = starryNight.highlight(formattedSource, javascriptScope)
+        const nodes = toJsxRuntime(tree, { Fragment, jsx, jsxs })
+        setHighlightedCode(nodes)
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setHighlightedCode(formattedSource)
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [formattedSource])
 
   return (
-    <SyntaxHighlighter
-      customStyle={{
-        height: '100%',
-        maxHeight: '100%',
-        margin: 0,
-        padding: '1.25rem',
-        borderRadius: 0,
-        background: 'transparent',
-        fontFamily: 'var(--font-jetbrains), ui-monospace, monospace',
-        fontSize: '0.82rem',
-        lineHeight: 1.65,
-        boxSizing: 'border-box',
-      }}
-      language={'javascript'}
-      style={style}
-    >
-      {formattedSource}
-    </SyntaxHighlighter>
+    <div className={styles.preview}>
+      <div ref={containerRef} className={styles.viewport}>
+        <pre ref={contentRef} className={styles.pre}>
+          <code className={styles.code}>{highlightedCode}</code>
+        </pre>
+      </div>
+    </div>
   )
 }

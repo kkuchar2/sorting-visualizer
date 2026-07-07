@@ -29,7 +29,7 @@ export function RadialChart(props: ChartProps) {
       dummy.rotation.z = angle + Math.PI / 2
       dummy.updateMatrix()
       meshRef.current.setMatrixAt(i, dummy.matrix)
-      meshRef.current.setColorAt(i, getInstanceColor(i, marker))
+      meshRef.current.setColorAt(i, getInstanceColor(value, i, marker))
     }
 
     meshRef.current.instanceMatrix.needsUpdate = true

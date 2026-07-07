@@ -24,7 +24,7 @@ export function BarChart(props: ChartProps) {
       dummy.position.set(barWidth / 2 + barWidth * i + spacing * i + offsetX, -(1 - barHeight) / 2 - height / 2, 0)
       dummy.updateMatrix()
       meshRef.current.setMatrixAt(i, dummy.matrix)
-      meshRef.current.setColorAt(i, getInstanceColor(i, marker))
+      meshRef.current.setColorAt(i, getInstanceColor(value, i, marker))
     }
 
     meshRef.current.instanceMatrix.needsUpdate = true

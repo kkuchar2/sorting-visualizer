@@ -15,7 +15,11 @@ export const soundModes: SoundModeOption[] = [
   { value: 'off', label: 'Off' },
 ]
 
-const CONTINUOUS_MODES: SoundMode[] = ['triangle', 'sine', 'square', 'sawtooth']
+type ContinuousSoundMode = Extract<SoundMode, OscillatorType>
+
+const CONTINUOUS_MODES: ContinuousSoundMode[] = ['triangle', 'sine', 'square', 'sawtooth']
+
+const isContinuousMode = (mode: SoundMode): mode is ContinuousSoundMode => CONTINUOUS_MODES.includes(mode as ContinuousSoundMode)
 
 const createNoiseBuffer = (context: AudioContext) => {
   const buffer = context.createBuffer(1, context.sampleRate * 0.08, context.sampleRate)
@@ -34,7 +38,7 @@ export class SoundEngine {
   private oscillator: OscillatorNode | null = null
   private oscillatorGain: GainNode | null = null
   private noiseBuffer: AudioBuffer | null = null
-  private mode: SoundMode = 'triangle'
+  private mode: SoundMode = 'sine'
 
   init() {
     const context = new AudioContext()
@@ -45,14 +49,14 @@ export class SoundEngine {
     this.context = context
     this.masterGain = masterGain
     this.noiseBuffer = createNoiseBuffer(context)
-    this.setMode('triangle')
+    this.setMode('sine')
     void context.suspend()
   }
 
   setMode(mode: SoundMode) {
     this.mode = mode
 
-    if (CONTINUOUS_MODES.includes(mode)) {
+    if (isContinuousMode(mode)) {
       this.startContinuousOscillator(mode)
       return
     }
@@ -65,7 +69,7 @@ export class SoundEngine {
       return
     }
 
-    if (CONTINUOUS_MODES.includes(this.mode)) {
+    if (isContinuousMode(this.mode)) {
       if (this.oscillator) {
         this.oscillator.frequency.value = frequency
       }
@@ -98,8 +102,8 @@ export class SoundEngine {
     this.noiseBuffer = null
   }
 
-  private startContinuousOscillator(mode: SoundMode) {
-    if (!this.context || !this.masterGain || !CONTINUOUS_MODES.includes(mode)) {
+  private startContinuousOscillator(mode: ContinuousSoundMode) {
+    if (!this.context || !this.masterGain) {
       return
     }
 

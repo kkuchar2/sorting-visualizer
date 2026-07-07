@@ -2,17 +2,11 @@ import { Color } from 'three'
 
 import { MAX_SAMPLE_VALUE } from '@/config'
 
-export const CHART_BAR_COLOR = '#c5dcc8'
-export const CHART_MARKER_COLOR = '#d4655f'
-
 export interface ChartProps {
   sampleCount: number
   data: number[]
   marker?: number
 }
-
-export const getInstanceColor = (index: number, marker?: number) =>
-  new Color(index === marker ? CHART_MARKER_COLOR : CHART_BAR_COLOR)
 
 const HEATMAP_STOPS: Array<{ t: number; color: string }> = [
   { t: 0, color: '#1a3352' },
@@ -44,6 +38,8 @@ export const getHeatmapColor = (value: number, index: number, marker?: number) =
   return new Color(HEATMAP_STOPS[HEATMAP_STOPS.length - 1].color)
 }
 
+export const getInstanceColor = getHeatmapColor
+
 export const getGridLayout = (width: number, height: number, sampleCount: number) => {
   const cols = Math.max(1, Math.ceil(Math.sqrt((sampleCount * width) / height)))
   const rows = Math.ceil(sampleCount / cols)
@@ -58,7 +54,7 @@ export const getGridLayout = (width: number, height: number, sampleCount: number
 export const scaleValue = (value: number, maxSize: number) => (value / MAX_SAMPLE_VALUE) * maxSize
 
 export const calculateBarsSizes = (width: number, barsCount: number) => {
-  let maxBarWidth = width / barsCount
+  const maxBarWidth = width / barsCount
   let spacing = 0
   let barWidth = 1
   let min = Math.min()

@@ -1,6 +1,4 @@
-import styles from './SoundModeSelector.module.scss'
-
-import { ToggleButton } from '@/components/ToggleButton/ToggleButton'
+import { SelectField } from '@/components/SelectField/SelectField'
 import { SoundMode, soundModes } from '@/config/soundModes'
 
 interface SoundModeSelectorProps {
@@ -13,17 +11,13 @@ export const SoundModeSelector = (props: SoundModeSelectorProps) => {
   const { currentMode, onModeSelected, disabled } = props
 
   return (
-    <div className={styles.soundModeSelector}>
-      {soundModes.map((mode) => (
-        <ToggleButton
-          key={mode.value}
-          disabled={disabled}
-          active={mode.value === currentMode}
-          onClick={() => onModeSelected(mode.value)}
-        >
-          {mode.label}
-        </ToggleButton>
-      ))}
-    </div>
+    <SelectField
+      id={'sound-mode-select'}
+      label={'Sound'}
+      value={currentMode}
+      disabled={disabled}
+      options={soundModes}
+      onChange={onModeSelected}
+    />
   )
 }

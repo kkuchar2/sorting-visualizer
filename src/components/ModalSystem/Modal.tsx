@@ -1,66 +1,62 @@
-'use client';
+'use client'
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'
 
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom'
 
 interface ModalProps {
-    onClose: () => void;
-    title?: string;
-    children: React.ReactNode;
+  onClose: () => void
+  title?: string
+  children: React.ReactNode
 }
 
 const Modal = (props: ModalProps) => {
+  const { onClose, title, children } = props
 
-    const { onClose, title, children } = props;
+  const [mount, setMount] = useState(false)
 
-    const [mount, setMount] = useState(false);
+  useEffect(() => {
+    setMount(true)
+  }, [])
 
-    useEffect(() => {
-        setMount(true);
-    }, []);
+  const handleCloseClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    onClose()
+  }
 
-    const handleCloseClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-        onClose();
-    };
+  const onOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    onClose()
+  }
 
-    const onOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        onClose();
-    };
+  const modalContent = (
+    <div className={'modal-overlay'} onClick={onOverlayClick}>
+      <div className={'modal-wrapper'}>
+        <div className={'modal'}>
+          <div className={'modal-header'}>
+            {title && <h1 className={'text-2xl font-semibold tracking-tight text-white'}>{title}</h1>}
+            <button className={'close-button'} onClick={handleCloseClick}>
+              <div className={'line line-1'} />
+              <div className={'line line-2'} />
+            </button>
+          </div>
 
-    const modalContent = (
-
-        <div className={'modal-overlay'} onClick={onOverlayClick}>
-            <div className={'modal-wrapper'}>
-
-                <div className={'modal'}>
-                    <div className={'modal-header'}>
-                        {title && <h1 className={'text-2xl font-semibold tracking-tight text-white'}>{title}</h1>}
-                        <button className={'close-button'} onClick={handleCloseClick}>
-                            <div className={'line line-1'}/>
-                            <div className={'line line-2'}/>
-                        </button>
-                    </div>
-
-                    <div className={'modal-body'}>
-                        {children}
-                    </div>
-                </div>
-            </div>
+          <div className={'modal-body'}>{children}</div>
         </div>
+      </div>
+    </div>
+  )
 
-    );
+  if (!mount) {
+    return null
+  }
 
-    if (!mount) {
-        return null;
-    }
+  const modalRoot = document.getElementById('modal-root')
+  if (!modalRoot) {
+    return null
+  }
 
-    return ReactDOM.createPortal(
-        modalContent,
-        document.getElementById('modal-root')
-    );
-};
+  return ReactDOM.createPortal(modalContent, modalRoot)
+}
 
-export default Modal;
+export default Modal

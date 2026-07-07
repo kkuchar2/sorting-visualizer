@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useThree } from '@react-three/fiber'
 import { InstancedMesh, Object3D } from 'three'
 
-import { ChartProps, getGridLayout, getHeatmapColor } from '@/three/canvas/chartUtils'
+import { ChartProps, getGridLayout, getInstanceColor } from '@/three/canvas/chartUtils'
 
 export function HeatmapChart(props: ChartProps) {
   const { sampleCount, data, marker } = props
@@ -28,7 +28,7 @@ export function HeatmapChart(props: ChartProps) {
       dummy.position.set(x, y, 0)
       dummy.updateMatrix()
       meshRef.current.setMatrixAt(i, dummy.matrix)
-      meshRef.current.setColorAt(i, getHeatmapColor(data[i], i, marker))
+      meshRef.current.setColorAt(i, getInstanceColor(data[i], i, marker))
     }
 
     meshRef.current.instanceMatrix.needsUpdate = true

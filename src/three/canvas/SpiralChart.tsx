@@ -29,7 +29,7 @@ export function SpiralChart(props: ChartProps) {
       dummy.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0)
       dummy.updateMatrix()
       meshRef.current.setMatrixAt(i, dummy.matrix)
-      meshRef.current.setColorAt(i, getInstanceColor(i, marker))
+      meshRef.current.setColorAt(i, getInstanceColor(value, i, marker))
     }
 
     meshRef.current.instanceMatrix.needsUpdate = true

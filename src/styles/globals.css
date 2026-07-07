@@ -4,16 +4,19 @@
     --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
     --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 
-    --color-bg: oklch(0.16 0.01 160);
-    --color-surface: oklch(0.19 0.012 160);
-    --color-surface-raised: oklch(0.22 0.012 160);
-    --color-border: oklch(0.32 0.015 160);
-    --color-text: oklch(0.93 0.01 160);
-    --color-text-muted: oklch(0.72 0.02 160);
-    --color-accent: oklch(0.72 0.13 155);
-    --color-accent-soft: oklch(0.28 0.04 155);
-    --color-danger: oklch(0.68 0.16 20);
-    --color-chart-bar: oklch(0.82 0.06 155);
+    --color-bg: oklch(0.21 0.012 160);
+    --color-surface: oklch(0.24 0.012 160);
+    --color-surface-raised: oklch(0.27 0.013 160);
+    --color-control: oklch(0.3 0.013 160);
+    --color-control-hover: oklch(0.34 0.014 160);
+    --color-border: oklch(0.36 0.012 160);
+    --color-text: oklch(0.94 0.01 160);
+    --color-text-muted: oklch(0.66 0.02 160);
+    --color-accent: oklch(0.74 0.13 155);
+    --color-accent-soft: oklch(0.34 0.05 155);
+    --color-danger: oklch(0.7 0.16 20);
+    --color-danger-soft: oklch(0.32 0.05 20);
+    --color-chart-bar: oklch(0.8 0.06 155);
     --color-chart-marker: oklch(0.66 0.17 25);
 }
 
@@ -28,6 +31,14 @@ body {
     font-family: var(--font-sans);
 }
 
+@media (min-width: 1280px) {
+    main {
+        height: 100dvh;
+        max-height: 100dvh;
+        overflow: hidden;
+    }
+}
+
 *, *:before, *:after {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
@@ -39,7 +50,7 @@ canvas {
 }
 
 ::selection {
-    background: oklch(0.35 0.05 155);
+    background: oklch(0.38 0.05 155);
     color: var(--color-text);
 }
 

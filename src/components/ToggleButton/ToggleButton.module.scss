@@ -1,8 +1,8 @@
 .toggleButton {
   padding: 0.4rem 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  background: var(--color-surface-raised);
+  border: none;
+  border-radius: 5px;
+  background: var(--color-control);
   color: var(--color-text-muted);
   font-size: 0.8125rem;
   font-weight: 500;
@@ -10,11 +10,10 @@
 
   &:hover:not(.disabled) {
     color: var(--color-text);
-    background: var(--color-surface);
+    background: var(--color-control-hover);
   }
 
   &.active {
-    border-color: var(--color-accent);
     background: var(--color-accent-soft);
     color: var(--color-accent);
 

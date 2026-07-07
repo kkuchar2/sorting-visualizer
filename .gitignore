@@ -19,6 +19,7 @@ src/components/SourceCodePreview/sourceMap.generated.ts
 # misc
 .DS_Store
 .env*
+*.tsbuildinfo
 
 # debug
 npm-debug.log*

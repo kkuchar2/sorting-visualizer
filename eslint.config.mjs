@@ -41,7 +41,7 @@ export default [
         version: "19.0",
       },
       tailwindcss: {
-        config: {},
+        cssConfigPath: "./src/styles/globals.css",
       },
     },
 
