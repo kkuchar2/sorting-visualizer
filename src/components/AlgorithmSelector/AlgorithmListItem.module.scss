@@ -1,22 +1,23 @@
 .algoListItem {
   display: flex;
   justify-content: flex-start;
-  padding: 20px;
-  font-size: 1.25rem;
-  color: white;
-  box-sizing: content-box;
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.04);
+  width: 100%;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
 
   &.active {
-    background-color: rgba(10, 234, 134, 0.53);
-
-    &:hover {
-      background-color: rgba(0, 255, 142, 0.53);
-    }
+    border-color: var(--color-accent);
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
   }
 
   &:hover {
-    background-color: #3c3c3c;
+    background: var(--color-surface);
   }
 }

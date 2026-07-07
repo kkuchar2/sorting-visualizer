@@ -1,100 +1,76 @@
 .modal-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100dvh;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgba(67, 67, 67, 0.9);
-    backdrop-filter: blur(5px);
+    padding: 1rem;
+    background: oklch(0 0 0 / 0.55);
 }
 
 .modal-wrapper {
-    padding: 20px;
     width: 100%;
-    max-width: 800px;
-    position: relative;
-    display: grid;
-    place-items: center;
-}
-
-@media (min-width: 768px) {
-    .modal-wrapper {
-        min-width: 600px;
-    }
-}
-
-@keyframes showModal {
-    from {
-        transform: translateY(-100px);
-    }
-    to {
-        transform: translateY(0);
-    }
+    max-width: 28rem;
 }
 
 .modal {
-    background: #272727;
     overflow: hidden;
     width: 100%;
-    animation: showModal 0.5s cubic-bezier(0.075, 0.82, 0.165, 1) forwards;
-    border-radius: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-surface);
 }
 
 .modal-body {
-    max-height: 500px;
+    max-height: min(60dvh, 24rem);
     overflow: auto;
+    padding: 0 1rem 1rem;
 }
 
 .modal-header {
-    color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 25px;
-    padding: 20px 30px 20px 30px;
+    gap: 0.75rem;
+    padding: 1rem 1rem 0.75rem;
+    color: var(--color-text);
+}
+
+.modal-header h1 {
+    font-size: 1rem;
+    font-weight: 600;
 }
 
 .close-button {
     position: relative;
-    border: none;
-    font-size: 3rem;
-    cursor: pointer;
-    line-height: 0;
-    width: 40px;
-    height: 40px;
+    width: 2rem;
+    height: 2rem;
     display: grid;
     place-items: center;
-    background: rgba(255, 0, 0, 0.15);
-    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface-raised);
+    cursor: pointer;
 }
 
 .close-button:hover {
-    background: rgba(255, 0, 0, 0.25);
+    background: var(--color-surface);
 }
 
 .close-button > .line {
-    width: 55%;
+    width: 50%;
     height: 1px;
-    background: #ff0000;
+    background: var(--color-text-muted);
     position: absolute;
-    transform: translate(-50%) rotate(45deg);
     top: 50%;
     left: 50%;
-    border-radius: 5px;
 }
 
-
 .close-button > .line-1 {
-    transform: translate(-50%) rotate(45deg);
+    transform: translate(-50%, -50%) rotate(45deg);
 }
 
 .close-button > .line-2 {
-    transform: translate(-50%) rotate(-45deg);
-}
-
-.close-button:hover {
-    color: white;
+    transform: translate(-50%, -50%) rotate(-45deg);
 }

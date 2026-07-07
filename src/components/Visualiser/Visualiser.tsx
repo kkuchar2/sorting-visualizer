@@ -10,10 +10,12 @@ import { ControlButtons } from '@/components/ControlButtons/ControlButtons'
 import pageStyles from '@/components/Pages/IndexPage/IndexPage.module.scss'
 import { Slider } from '@/components/Slider/Slider'
 import { SoundModeSelector } from '@/components/SoundModeSelector/SoundModeSelector'
+import { VisualModeSelector } from '@/components/VisualModeSelector/VisualModeSelector'
 import styles from '@/components/Visualiser/Visualiser.module.scss'
 import { DEFAULT_SAMPLE_COUNT, MAX_SAMPLE_VALUE, SLOWDOWN_FACTOR_MS, SortAlgorithm, sortingAlgorithms } from '@/config'
 import { SoundMode } from '@/config/soundModes'
-import { Bar } from '@/three/canvas/Examples'
+import { VisualMode } from '@/config/visualModes'
+import { ChartView } from '@/three/canvas/ChartView'
 import { ChartCamera } from '@/three/canvas/ChartCamera'
 import { createSAB16, createSAB32, createSAB8 } from '@/util/util'
 import { registerSortWorker, sendMessage, unregisterWorker } from '@/workers/workers'
@@ -39,6 +41,7 @@ export const Visualiser = (props: VisualiserProps) => {
   })
 
   const [soundMode, setSoundMode] = useState<SoundMode>('triangle')
+  const [visualMode, setVisualMode] = useState<VisualMode>('bars')
   const [sorted, setSorted] = useState(false)
   const [sorting, setSorting] = useState(false)
   const [paused, setPaused] = useState(false)
@@ -195,11 +198,12 @@ export const Visualiser = (props: VisualiserProps) => {
 
         <div className={styles.soundBlock}>
           <span className={pageStyles.samplesLabel}>{'Sound'}</span>
-          <SoundModeSelector
-            disabled={sorting}
-            currentMode={soundMode}
-            onModeSelected={setSoundMode}
-          />
+          <SoundModeSelector disabled={sorting} currentMode={soundMode} onModeSelected={setSoundMode} />
+        </div>
+
+        <div className={styles.visualBlock}>
+          <span className={pageStyles.samplesLabel}>{'View'}</span>
+          <VisualModeSelector disabled={sorting} currentMode={visualMode} onModeSelected={setVisualMode} />
         </div>
 
         <ControlButtons
@@ -218,7 +222,8 @@ export const Visualiser = (props: VisualiserProps) => {
         <div className={styles.chartInner}>
           <Canvas orthographic>
             <ChartCamera />
-            <Bar
+            <ChartView
+              mode={visualMode}
               data={Array.from(calculationState.current.data)}
               marker={Array.from(calculationState.current.soundData)[1]}
               sampleCount={calculationState.current.sampleCount}

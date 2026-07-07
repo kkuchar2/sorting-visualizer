@@ -1,24 +1,41 @@
 .controlButtons {
-  flex-wrap: wrap;
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
 
   button {
-    background: rgba(255, 255, 255, 0.08);
-    width: 100px;
-    border-radius: 5px;
-    color: white;
-    padding: 10px;
+    min-width: 5rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface-raised);
+    color: var(--color-text);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
 
-    &:hover {
-      background: rgba(255, 255, 255, 0.2);
+    &:hover:not(:disabled) {
+      background: var(--color-surface);
     }
 
     &:disabled {
-      background: rgba(255, 255, 255, 0.08);
-      color: rgba(255, 255, 255, 0.2);
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  .primary {
+    border-color: var(--color-accent);
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  .danger {
+    &:hover:not(:disabled) {
+      color: var(--color-danger);
     }
   }
 }
