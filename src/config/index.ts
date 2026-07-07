@@ -28,4 +28,13 @@ const sortingAlgorithms: SortAlgorithm[] = [
 
 const imageSortingAlgorithm: SortAlgorithm = { value: 'CountingSort', label: 'Counting Sort' }
 
-export { sortingAlgorithms, imageSortingAlgorithm, DEFAULT_SAMPLE_COUNT, MAX_SAMPLE_VALUE, SLOWDOWN_FACTOR_MS }
+const GITHUB_REPO_URL = 'https://github.com/kkuchar2/sorting-visualizer'
+
+export {
+  sortingAlgorithms,
+  imageSortingAlgorithm,
+  DEFAULT_SAMPLE_COUNT,
+  MAX_SAMPLE_VALUE,
+  SLOWDOWN_FACTOR_MS,
+  GITHUB_REPO_URL,
+}
