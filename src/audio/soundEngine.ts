@@ -38,7 +38,7 @@ export class SoundEngine {
   private oscillator: OscillatorNode | null = null
   private oscillatorGain: GainNode | null = null
   private noiseBuffer: AudioBuffer | null = null
-  private mode: SoundMode = 'sine'
+  private mode: SoundMode = 'pluck'
 
   init() {
     const context = new AudioContext()
@@ -49,7 +49,7 @@ export class SoundEngine {
     this.context = context
     this.masterGain = masterGain
     this.noiseBuffer = createNoiseBuffer(context)
-    this.setMode('sine')
+    this.setMode('pluck')
     void context.suspend()
   }
 

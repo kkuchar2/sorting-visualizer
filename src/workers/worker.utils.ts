@@ -95,6 +95,24 @@ export const onSortMethodExit = () => {
 
 export const getSortMethod = (algorithm: SortAlgorithmName) => sortAlgorithmMap[algorithm]
 
+let identityBuffer: SortDataBuffer | null = null
+let identityBufferLength = 0
+
+const resetToIdentity = (data: SortDataBuffer) => {
+  const len = data.length
+  const bufferType = data.constructor as typeof Uint16Array
+
+  if (!identityBuffer || identityBufferLength !== len || identityBuffer.constructor !== bufferType) {
+    identityBuffer = new bufferType(len)
+    for (let i = 0; i < len; i++) {
+      identityBuffer[i] = i
+    }
+    identityBufferLength = len
+  }
+
+  data.set(identityBuffer)
+}
+
 export const initSharedData = async (
   buffer: SortDataBuffer,
   controlBuffer: Uint8Array,
@@ -104,9 +122,15 @@ export const initSharedData = async (
 ) => {
   sortState.data = buffer
   soundMaxValue = identityInit ? Math.max(buffer.length - 1, 1) : maxValue
-  for (let i = 0; i < sortState.data.length; i++) {
-    sortState.data[i] = identityInit ? i : getRandomUInt16(1, maxValue)
+
+  if (identityInit) {
+    resetToIdentity(sortState.data)
+  } else {
+    for (let i = 0; i < sortState.data.length; i++) {
+      sortState.data[i] = getRandomUInt16(1, maxValue)
+    }
   }
+
   sortState.controlData = controlBuffer
   sortState.soundData = soundBuffer
 }
@@ -118,10 +142,28 @@ export const shuffle = async (maxValue: number) => {
 }
 
 export const scramble = async (percent: number) => {
-  const len = sortState.data.length
+  const data = sortState.data
+  const len = data.length
 
-  for (let i = 0; i < len; i++) {
-    sortState.data[i] = i
+  if (len === 0) {
+    return
+  }
+
+  if (percent === 0) {
+    resetToIdentity(data)
+    return
+  }
+
+  resetToIdentity(data)
+
+  if (percent >= 100) {
+    for (let i = len - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      const tmp = data[i]
+      data[i] = data[j]
+      data[j] = tmp
+    }
+    return
   }
 
   const swaps = Math.floor((len * percent) / 100)
@@ -129,9 +171,9 @@ export const scramble = async (percent: number) => {
   for (let s = 0; s < swaps; s++) {
     const a = Math.floor(Math.random() * len)
     const b = Math.floor(Math.random() * len)
-    const tmp = sortState.data[a]
-    sortState.data[a] = sortState.data[b]
-    sortState.data[b] = tmp
+    const tmp = data[a]
+    data[a] = data[b]
+    data[b] = tmp
   }
 }
 

@@ -60,6 +60,12 @@
   text-align: right;
 }
 
+.sampleCountLoading {
+  color: var(--color-text-muted);
+  font-family: var(--font-sans);
+  font-style: italic;
+}
+
 .chartShell {
   position: relative;
   flex-shrink: 0;

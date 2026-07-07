@@ -1,4 +1,4 @@
-import { useCallback, useMemo, type ChangeEvent, type PointerEvent } from 'react'
+import { useCallback, useMemo, type ChangeEvent, type KeyboardEvent, type PointerEvent } from 'react'
 
 import styles from './Slider.module.scss'
 
@@ -39,6 +39,16 @@ export const Slider = (props: SliderProps) => {
     [disabled, onCommit],
   )
 
+  const onKeyUp = useCallback(
+    (e: KeyboardEvent<HTMLInputElement>) => {
+      if (disabled) {
+        return
+      }
+      onCommit?.(parseInt(e.currentTarget.value, 10))
+    },
+    [disabled, onCommit],
+  )
+
   return (
     <div className={[styles.sliderRoot, disabled ? styles.disabled : ''].join(' ')}>
       <div className={styles.track} aria-hidden={'true'}>
@@ -54,6 +64,7 @@ export const Slider = (props: SliderProps) => {
         disabled={disabled}
         onChange={onInput}
         onPointerUp={onPointerUp}
+        onKeyUp={onKeyUp}
         aria-valuemin={min}
         aria-valuemax={max}
         aria-valuenow={value}

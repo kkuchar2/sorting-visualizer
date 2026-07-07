@@ -42,13 +42,14 @@ export const Visualiser = (props: VisualiserProps) => {
     locked: false,
   })
 
-  const [soundMode, setSoundMode] = useState<SoundMode>('sine')
+  const [soundMode, setSoundMode] = useState<SoundMode>('pluck')
   const [visualMode, setVisualMode] = useState<VisualMode>('bars')
   const [sampleCount, setSampleCount] = useState(DEFAULT_SAMPLE_COUNT)
   const [scramblePercent, setScramblePercent] = useState(100)
   const [imagePixels, setImagePixels] = useState<ImagePixelData | null>(null)
   const [sorted, setSorted] = useState(false)
   const [sorting, setSorting] = useState(false)
+  const [scrambling, setScrambling] = useState(false)
   const [paused, setPaused] = useState(false)
 
   const worker = useRef<Worker | null>(null)
@@ -75,6 +76,7 @@ export const Visualiser = (props: VisualiserProps) => {
   }, [sorting, onSortingChanged])
 
   const requestScramble = useCallback((percent: number) => {
+    setScrambling(true)
     setSorted(percent === 0)
     sendMessage(worker.current, 'shuffle', { scramblePercent: percent })
   }, [])
@@ -148,6 +150,7 @@ export const Visualiser = (props: VisualiserProps) => {
           break
         }
         case 'shuffle':
+          setScrambling(false)
           if (visualModeRef.current === 'image') {
             setSorted(scramblePercentRef.current === 0)
           } else {
@@ -285,21 +288,15 @@ export const Visualiser = (props: VisualiserProps) => {
 
   const applyScramblePercent = useCallback(
     (percent: number) => {
-      if (visualModeRef.current !== 'image' || sorting) return
+      if (visualModeRef.current !== 'image' || sorting || scrambling) return
       requestScramble(percent)
     },
-    [requestScramble, sorting],
+    [requestScramble, sorting, scrambling],
   )
 
-  const throttledApplyScramblePercent = useThrottleCallback(applyScramblePercent, 120)
-
-  const onScramblePercentChange = useCallback(
-    (percent: number) => {
-      setScramblePercent(percent)
-      throttledApplyScramblePercent(percent)
-    },
-    [throttledApplyScramblePercent],
-  )
+  const onScramblePercentChange = useCallback((percent: number) => {
+    setScramblePercent(percent)
+  }, [])
 
   const onScramblePercentCommit = useCallback(
     (percent: number) => {
@@ -318,6 +315,7 @@ export const Visualiser = (props: VisualiserProps) => {
           <ControlButtons
             sorted={sorted}
             sorting={sorting}
+            shuffleDisabled={scrambling}
             paused={paused}
             requestShuffleData={requestShuffleData}
             onPauseButtonPressed={onPauseButtonPressed}
@@ -333,14 +331,16 @@ export const Visualiser = (props: VisualiserProps) => {
               <label className={styles.samplesLabel} htmlFor={isImageMode ? 'scramble-range' : 'samples-range'}>
                 {isImageMode ? 'Scramble' : 'Samples'}
               </label>
-              <span className={styles.sampleCount}>{isImageMode ? `${scramblePercent}%` : sampleCount}</span>
+              <span className={[styles.sampleCount, scrambling ? styles.sampleCountLoading : ''].join(' ')}>
+                {scrambling ? 'Applying…' : isImageMode ? `${scramblePercent}%` : sampleCount}
+              </span>
             </div>
             {isImageMode ? (
               <Slider
                 id={'scramble-range'}
                 min={0}
                 max={100}
-                disabled={sorting || !imagePixels}
+                disabled={sorting || scrambling || !imagePixels}
                 value={scramblePercent}
                 onChange={onScramblePercentChange}
                 onCommit={onScramblePercentCommit}

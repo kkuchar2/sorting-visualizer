@@ -2,6 +2,7 @@ import styles from './ControlButtons.module.scss'
 
 interface ControlButtonsProps {
   sorting: boolean
+  shuffleDisabled?: boolean
   paused: boolean
   sorted: boolean
   requestShuffleData: () => void
@@ -14,6 +15,7 @@ interface ControlButtonsProps {
 export const ControlButtons = (props: ControlButtonsProps) => {
   const {
     sorting,
+    shuffleDisabled = false,
     paused,
     sorted,
     requestShuffleData,
@@ -44,7 +46,7 @@ export const ControlButtons = (props: ControlButtonsProps) => {
 
   return (
     <div className={styles.controlButtons}>
-      <button onClick={requestShuffleData}>
+      <button disabled={shuffleDisabled} onClick={requestShuffleData}>
         {'Shuffle'}
       </button>
       <button className={styles.primary} disabled={sorted} onClick={onSortButtonPressed}>
