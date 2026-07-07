@@ -1,9 +1,0 @@
-minimumReleaseAge: 0
-
-overrides:
-  postcss: '>=8.5.10'
-
-allowBuilds:
-  '@parcel/watcher': true
-  sharp: true
-  unrs-resolver: true
