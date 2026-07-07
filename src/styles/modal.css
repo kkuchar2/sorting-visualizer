@@ -1,75 +1,93 @@
 .modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 40;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-    background: oklch(0.12 0.01 160 / 0.5);
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  background: oklch(0.12 0.01 160 / 0.55);
+  backdrop-filter: blur(4px);
 }
 
 .modal-wrapper {
-    width: 100%;
-    max-width: 28rem;
+  width: 100%;
+  max-width: 28rem;
+}
+
+.modal-wrapper--wide {
+  max-width: min(52rem, 96vw);
 }
 
 .modal {
-    overflow: hidden;
-    width: 100%;
-    border-radius: 8px;
-    background: var(--color-surface-raised);
+  overflow: hidden;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface-raised);
+  box-shadow: 0 24px 48px oklch(0.1 0.02 160 / 0.35);
 }
 
 .modal-body {
-    max-height: min(60dvh, 24rem);
-    overflow: auto;
-    padding: 0 1rem 1rem;
+  max-height: min(60dvh, 24rem);
+  overflow: auto;
+  padding: 0 1rem 1rem;
+}
+
+.modal-wrapper--wide .modal-body {
+  display: flex;
+  min-height: min(70dvh, 28rem);
+  max-height: min(80dvh, 36rem);
+  padding: 0;
+  overflow: hidden;
 }
 
 .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 1rem 0.75rem;
-    color: var(--color-text);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1rem 0.75rem;
+  color: var(--color-text);
 }
 
-.modal-header h1 {
-    font-size: 1rem;
-    font-weight: 600;
+.modal-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .close-button {
-    position: relative;
-    width: 2rem;
-    height: 2rem;
-    display: grid;
-    place-items: center;
-    border: none;
-    border-radius: 5px;
-    background: var(--color-control);
-    cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 5px;
+  background: var(--color-control);
+  cursor: pointer;
 }
 
 .close-button:hover {
-    background: var(--color-control-hover);
+  background: var(--color-control-hover);
 }
 
 .close-button > .line {
-    width: 50%;
-    height: 1px;
-    background: var(--color-text-muted);
-    position: absolute;
-    top: 50%;
-    left: 50%;
+  width: 50%;
+  height: 1px;
+  background: var(--color-text-muted);
+  position: absolute;
+  top: 50%;
+  left: 50%;
 }
 
 .close-button > .line-1 {
-    transform: translate(-50%, -50%) rotate(45deg);
+  transform: translate(-50%, -50%) rotate(45deg);
 }
 
 .close-button > .line-2 {
-    transform: translate(-50%, -50%) rotate(-45deg);
+  transform: translate(-50%, -50%) rotate(-45deg);
 }

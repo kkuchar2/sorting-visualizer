@@ -12,6 +12,7 @@ const entries = [
   ['MergeSort', 'merge.recursive.sort.ts'],
   ['QuickSort', 'quick.sort.ts'],
   ['CocktailShakerSort', 'cocktailShakerSort.sort.ts'],
+  ['CountingSort', 'counting.sort.ts'],
 ]
 
 const lines = [

@@ -1,9 +1,11 @@
+import { MAX_SAMPLE_VALUE } from '@/config'
 import {
   getSortMethod,
   initSharedData,
   notifySortDataInitComplete,
   notifySortDataShuffled,
   onSortMethodExit,
+  scramble,
   setSlowdownFactor,
   shuffle,
 } from './worker.utils'
@@ -39,7 +41,7 @@ self.onmessage = (message: MessageEvent<{ type: SortWorkerInboundType; payload: 
 /* ------------------------------------------------------ */
 
 const onSharedDataInitRequest = (msg: InitSharedDataPayload) => {
-  initSharedData(msg.buffer, msg.controlData, msg.soundData, msg.maxValue).then(notifySortDataInitComplete)
+  initSharedData(msg.buffer, msg.controlData, msg.soundData, msg.maxValue, msg.identityInit).then(notifySortDataInitComplete)
 }
 
 const onSortRequest = async (msg: SortPayload) => {
@@ -48,5 +50,10 @@ const onSortRequest = async (msg: SortPayload) => {
 }
 
 const onShuffleRequest = (msg: ShufflePayload) => {
-  shuffle(msg.maxValue).then(notifySortDataShuffled)
+  if (msg.scramblePercent !== undefined) {
+    scramble(msg.scramblePercent).then(notifySortDataShuffled)
+    return
+  }
+
+  shuffle(msg.maxValue ?? MAX_SAMPLE_VALUE).then(notifySortDataShuffled)
 }

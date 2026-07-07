@@ -64,9 +64,9 @@
   position: relative;
   flex-shrink: 0;
   width: 100%;
-  height: clamp(12rem, 38dvh, 24rem);
+  height: clamp(10rem, 30dvh, 16rem);
   overflow: hidden;
-  border-radius: 6px;
+  border: 1px solid var(--color-border);
   background: var(--color-surface);
 }
 
@@ -74,6 +74,14 @@
   position: relative;
   width: 100%;
   height: 100%;
+}
+
+.visualiser[data-image-mode] .chartShell {
+  width: min(100%, 20rem);
+  height: auto;
+  max-height: min(56dvh, 24rem);
+  aspect-ratio: 1;
+  margin-inline: auto;
 }
 
 @media (min-width: 540px) {
@@ -87,28 +95,32 @@
 }
 
 @media (min-width: 900px) {
+  .visualiser {
+    gap: 1rem;
+  }
+
   .settingsGrid {
-    grid-template-columns: minmax(9rem, 1fr) minmax(12rem, 1.4fr) minmax(7rem, 0.85fr) minmax(7rem, 0.85fr);
+    grid-template-columns: minmax(10rem, 1.4fr) minmax(7rem, 0.85fr) minmax(7rem, 0.85fr);
     align-items: end;
   }
 
-  .samplesField {
-    grid-column: auto;
+  .chartShell {
+    height: clamp(13rem, 34dvh, 20rem);
+  }
+
+  .visualiser[data-image-mode] .chartShell {
+    width: min(100%, 32rem);
+    max-height: min(64dvh, 36rem);
   }
 }
 
-@media (min-width: 1280px) {
-  .visualiser {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    overflow: hidden;
+@media (min-width: 1200px) {
+  .chartShell {
+    height: clamp(15rem, 38dvh, 24rem);
   }
 
-  .chartShell {
-    flex: 1 1 0;
-    flex-shrink: 1;
-    min-height: 0;
-    height: auto;
+  .visualiser[data-image-mode] .chartShell {
+    width: min(100%, 38rem);
+    max-height: min(68dvh, 42rem);
   }
 }

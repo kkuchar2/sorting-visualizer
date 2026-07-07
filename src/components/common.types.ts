@@ -1,3 +1,5 @@
+export type SortDataBuffer = Uint16Array | Uint32Array
+
 export interface CalculationState {
   /**
    * Control data is also SharedArrayBuffer
@@ -11,7 +13,7 @@ export interface CalculationState {
    */
   controlData: Uint8Array
   soundData: Uint32Array
-  data: Uint16Array
+  data: SortDataBuffer
   sampleCount: number
   dirty: boolean
   locked: boolean

@@ -1,12 +1,15 @@
 import type { SortAlgorithmName } from '@/config'
 
+import type { SortDataBuffer } from '@/components/common.types'
+
 export type SortWorkerInboundType = 'initSharedData' | 'sort' | 'shuffle' | 'setSlowdownFactor'
 
 export interface InitSharedDataPayload {
-  buffer: Uint16Array
+  buffer: SortDataBuffer
   controlData: Uint8Array
   soundData: Uint32Array
   maxValue: number
+  identityInit?: boolean
 }
 
 export interface SortPayload {
@@ -14,7 +17,8 @@ export interface SortPayload {
 }
 
 export interface ShufflePayload {
-  maxValue: number
+  maxValue?: number
+  scramblePercent?: number
 }
 
 export interface SetSlowdownFactorPayload {

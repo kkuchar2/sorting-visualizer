@@ -1,4 +1,4 @@
-export type VisualMode = 'bars' | 'dots' | 'radial' | 'sticks' | 'bricks' | 'heatmap' | 'spiral'
+export type VisualMode = 'bars' | 'dots' | 'radial' | 'sticks' | 'bricks' | 'heatmap' | 'spiral' | 'image'
 
 export interface VisualModeOption {
   value: VisualMode
@@ -13,4 +13,5 @@ export const visualModes: VisualModeOption[] = [
   { value: 'radial', label: 'Radial' },
   { value: 'spiral', label: 'Spiral' },
   { value: 'heatmap', label: 'Heatmap' },
+  { value: 'image', label: 'Image' },
 ]

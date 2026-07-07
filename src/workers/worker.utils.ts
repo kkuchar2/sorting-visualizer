@@ -1,5 +1,7 @@
 import { MAX_SAMPLE_VALUE, type SortAlgorithmName } from '@/config'
+import type { SortDataBuffer } from '@/components/common.types'
 import { getRandomUInt16 } from '@/util/util'
+import countingSort from '@/workers/sorts/counting.sort'
 import bubbleSort from '@/workers/sorts/bubble.sort'
 import cocktailShakerSort from '@/workers/sorts/cocktailShakerSort.sort'
 import insertionSort from '@/workers/sorts/insertion.sort'
@@ -10,15 +12,17 @@ let SLOWDOWN_FACTOR_MS = 1
 export const MIN_FREQ = 80
 export const MAX_FREQ = 1300
 
-export const getSound = (value: number) => ((MAX_FREQ - MIN_FREQ) / MAX_SAMPLE_VALUE) * value + MIN_FREQ
+export const getSound = (value: number, maxValue: number) => ((MAX_FREQ - MIN_FREQ) / maxValue) * value + MIN_FREQ
+
+let soundMaxValue = MAX_SAMPLE_VALUE
 
 export const setSound = (index: number) => {
-  sortState.soundData[0] = getSound(sortState.data[index])
+  sortState.soundData[0] = getSound(sortState.data[index], soundMaxValue)
   sortState.soundData[1] = index
 }
 
 interface SortState {
-  data: Uint16Array
+  data: SortDataBuffer
   soundData: Uint32Array
   controlData: Uint8Array
 }
@@ -35,6 +39,7 @@ export const sortAlgorithmMap = {
   InsertionSort: insertionSort,
   MergeSort: mergeSortRecursive,
   CocktailShakerSort: cocktailShakerSort,
+  CountingSort: countingSort,
 } as const satisfies Record<SortAlgorithmName, () => Promise<void>>
 
 type WorkerNotifyType = 'shuffle' | 'init' | 'sort'
@@ -91,14 +96,16 @@ export const onSortMethodExit = () => {
 export const getSortMethod = (algorithm: SortAlgorithmName) => sortAlgorithmMap[algorithm]
 
 export const initSharedData = async (
-  buffer: Uint16Array,
+  buffer: SortDataBuffer,
   controlBuffer: Uint8Array,
   soundBuffer: Uint32Array,
   maxValue: number,
+  identityInit = false,
 ) => {
   sortState.data = buffer
+  soundMaxValue = identityInit ? Math.max(buffer.length - 1, 1) : maxValue
   for (let i = 0; i < sortState.data.length; i++) {
-    sortState.data[i] = getRandomUInt16(1, maxValue)
+    sortState.data[i] = identityInit ? i : getRandomUInt16(1, maxValue)
   }
   sortState.controlData = controlBuffer
   sortState.soundData = soundBuffer
@@ -107,6 +114,24 @@ export const initSharedData = async (
 export const shuffle = async (maxValue: number) => {
   for (let i = 0; i < sortState.data.length; i++) {
     sortState.data[i] = getRandomUInt16(1, maxValue)
+  }
+}
+
+export const scramble = async (percent: number) => {
+  const len = sortState.data.length
+
+  for (let i = 0; i < len; i++) {
+    sortState.data[i] = i
+  }
+
+  const swaps = Math.floor((len * percent) / 100)
+
+  for (let s = 0; s < swaps; s++) {
+    const a = Math.floor(Math.random() * len)
+    const b = Math.floor(Math.random() * len)
+    const tmp = sortState.data[a]
+    sortState.data[a] = sortState.data[b]
+    sortState.data[b] = tmp
   }
 }
 

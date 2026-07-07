@@ -4,6 +4,7 @@ export const sortAlgorithmNames = [
   'InsertionSort',
   'QuickSort',
   'CocktailShakerSort',
+  'CountingSort',
 ] as const
 
 export type SortAlgorithmName = (typeof sortAlgorithmNames)[number]
@@ -25,4 +26,6 @@ const sortingAlgorithms: SortAlgorithm[] = [
   { value: 'CocktailShakerSort', label: 'CocktailShakerSort' },
 ]
 
-export { sortingAlgorithms, DEFAULT_SAMPLE_COUNT, MAX_SAMPLE_VALUE, SLOWDOWN_FACTOR_MS }
+const imageSortingAlgorithm: SortAlgorithm = { value: 'CountingSort', label: 'Counting Sort' }
+
+export { sortingAlgorithms, imageSortingAlgorithm, DEFAULT_SAMPLE_COUNT, MAX_SAMPLE_VALUE, SLOWDOWN_FACTOR_MS }
